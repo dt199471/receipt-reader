@@ -634,7 +634,7 @@
       display: none;
       justify-content: center;
       align-items: center;
-      margin: 1.5rem 0;
+      margin: 1.5rem 0 0.5rem;
       gap: 2rem;
       opacity: 0;
       animation: fadeSlideUp 0.4s ease-out forwards;
@@ -678,6 +678,76 @@
 
     .shutter-btn:active::before {
       opacity: 0.3;
+    }
+
+    /* 連続スキャンコントロール */
+    .continuous-scan-controls {
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      font-size: 0.8rem;
+      color: var(--sumi-light);
+    }
+
+    .continuous-scan-controls.visible {
+      display: flex;
+    }
+
+    .continuous-toggle-btn {
+      padding: 0.5rem 0.9rem;
+      border-radius: 999px;
+      border: 1px dashed var(--kage-deep);
+      background: rgba(245, 241, 235, 0.7);
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 0.8rem;
+      color: var(--sumi-light);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .continuous-toggle-btn:hover {
+      background: var(--washi);
+      color: var(--ai);
+      border-color: var(--ai);
+    }
+
+    .continuous-toggle-btn.active {
+      background: rgba(61, 90, 110, 0.1);
+      color: var(--ai);
+      border-color: var(--ai);
+    }
+
+    .continuous-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .continuous-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--kage-deep);
+    }
+
+    .continuous-dot.active {
+      background: var(--shu);
+      box-shadow: 0 0 0 4px rgba(201, 74, 74, 0.18);
+      animation: pulse-dot 1.4s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.7; }
+    }
+
+    .continuous-count {
+      font-variant-numeric: tabular-nums;
     }
 
     /* 解析ボタン */
@@ -833,6 +903,105 @@
     .item-price {
       font-weight: 500;
       color: var(--ai);
+    }
+
+    /* ========== カテゴリ分類 ========== */
+    .category-section {
+      margin-bottom: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--kage);
+    }
+
+    .category-label {
+      font-size: 0.85rem;
+      color: var(--sumi-light);
+      margin-bottom: 0.75rem;
+      font-weight: 500;
+    }
+
+    .category-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .category-btn {
+      padding: 0.5rem 1rem;
+      border: 1.5px solid var(--kage-deep);
+      border-radius: 20px;
+      background: var(--washi);
+      color: var(--sumi);
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      touch-action: manipulation;
+    }
+
+    .category-btn:hover {
+      border-color: var(--ai);
+      background: rgba(61, 90, 110, 0.05);
+      transform: translateY(-1px);
+    }
+
+    .category-btn.active {
+      background: var(--ai);
+      color: white;
+      border-color: var(--ai);
+      box-shadow: 0 2px 8px rgba(61, 90, 110, 0.3);
+    }
+
+    .category-btn.category-food.active {
+      background: #e74c3c;
+      border-color: #e74c3c;
+      box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+    }
+
+    .category-btn.category-transport.active {
+      background: #3498db;
+      border-color: #3498db;
+      box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+    }
+
+    .category-btn.category-daily.active {
+      background: #2ecc71;
+      border-color: #2ecc71;
+      box-shadow: 0 2px 8px rgba(46, 204, 113, 0.3);
+    }
+
+    .category-btn.category-entertainment.active {
+      background: #9b59b6;
+      border-color: #9b59b6;
+      box-shadow: 0 2px 8px rgba(155, 89, 182, 0.3);
+    }
+
+    .category-btn.category-medical.active {
+      background: #e67e22;
+      border-color: #e67e22;
+      box-shadow: 0 2px 8px rgba(230, 126, 34, 0.3);
+    }
+
+    .category-btn.category-education.active {
+      background: #1abc9c;
+      border-color: #1abc9c;
+      box-shadow: 0 2px 8px rgba(26, 188, 156, 0.3);
+    }
+
+    .category-btn.category-other.active {
+      background: var(--sumi-light);
+      border-color: var(--sumi-light);
+      box-shadow: 0 2px 8px rgba(45, 45, 45, 0.3);
+    }
+
+    .item-category {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      margin-left: 0.5rem;
+      font-size: 0.7rem;
+      border-radius: 10px;
+      background: var(--kage);
+      color: var(--sumi-light);
     }
 
     /* ========== 履歴ボタン ========== */
@@ -1126,6 +1295,17 @@
       <button class="shutter-btn" id="shutterBtn" aria-label="シャッター"></button>
     </div>
 
+    <!-- 連続スキャンコントロール（カメラモード用） -->
+    <div class="continuous-scan-controls" id="continuousControls">
+      <button class="continuous-toggle-btn" id="continuousToggleBtn" type="button">
+        <span>まとめ撮りモード</span>
+      </button>
+      <div class="continuous-indicator">
+        <span class="continuous-dot" id="continuousDot"></span>
+        <span class="continuous-count" id="continuousCount">0枚</span>
+      </div>
+    </div>
+
     <!-- 解析ボタン -->
     <div class="analyze-section">
       <button class="btn btn-analyze" id="analyzeBtn" disabled aria-label="レシートを解析">
@@ -1149,6 +1329,12 @@
         <div class="result-total">
           <p class="total-label">合計金額</p>
           <p class="total-amount" id="totalAmount">-</p>
+        </div>
+        <div class="category-section" id="categorySection">
+          <p class="category-label">カテゴリ</p>
+          <div class="category-buttons" id="categoryButtons">
+            <!-- 動的に追加 -->
+          </div>
         </div>
         <ul class="result-items" id="resultItems">
           <!-- 動的に追加 -->
@@ -1196,6 +1382,8 @@
     const totalAmount = document.getElementById('totalAmount');
     const resultItems = document.getElementById('resultItems');
     const loadingOverlay = document.getElementById('loadingOverlay');
+    const categorySection = document.getElementById('categorySection');
+    const categoryButtons = document.getElementById('categoryButtons');
 
     // カメラ関連要素
     const cameraVideo = document.getElementById('cameraVideo');
@@ -1216,6 +1404,10 @@
     const actionButtons = document.getElementById('actionButtons');
     const shutterSection = document.getElementById('shutterSection');
     const shutterBtn = document.getElementById('shutterBtn');
+    const continuousControls = document.getElementById('continuousControls');
+    const continuousToggleBtn = document.getElementById('continuousToggleBtn');
+    const continuousDot = document.getElementById('continuousDot');
+    const continuousCount = document.getElementById('continuousCount');
 
     // ========== 状態管理 ==========
     let hasImage = false;
@@ -1225,21 +1417,23 @@
     let currentStream = null;
     let currentMode = 'camera'; // 'camera' or 'gallery'
     let availableCameras = [];
+    let currentReceiptData = null;
+    let selectedCategory = null;
+    let isContinuousMode = false;
+    let isContinuousRunning = false;
+    let continuousIntervalId = null;
+    let continuousFrames = []; // { dataUrl, thumbUrl, score }
 
-    // ========== ダミーデータ ==========
-    const dummyReceipt = {
-      storeName: '和菓子処 花月堂',
-      date: '2025年1月14日 14:32',
-      total: '2,580',
-      items: [
-        { name: '季節の上生菓子 (3個入)', price: '980' },
-        { name: '抹茶どらやき', price: '320' },
-        { name: '黒糖わらび餅', price: '450' },
-        { name: '栗きんとん', price: '580' },
-        { name: '手提げ袋', price: '50' },
-        { name: '消費税 (10%)', price: '200' }
-      ]
-    };
+    // ========== カテゴリ定義 ==========
+    const categories = [
+      { id: 'food', name: '食費', icon: '🍽️', class: 'category-food' },
+      { id: 'transport', name: '交通費', icon: '🚃', class: 'category-transport' },
+      { id: 'daily', name: '日用品', icon: '🛒', class: 'category-daily' },
+      { id: 'entertainment', name: '娯楽', icon: '🎬', class: 'category-entertainment' },
+      { id: 'medical', name: '医療', icon: '🏥', class: 'category-medical' },
+      { id: 'education', name: '教育', icon: '📚', class: 'category-education' },
+      { id: 'other', name: 'その他', icon: '📝', class: 'category-other' }
+    ];
 
     // ========== 初期化 ==========
     async function init() {
@@ -1328,6 +1522,9 @@
       // 解析ボタン
       analyzeBtn.addEventListener('click', analyzeReceipt);
 
+      // 連続スキャン切り替え
+      continuousToggleBtn.addEventListener('click', toggleContinuousMode);
+
       // ページ非表示時にカメラを停止
       document.addEventListener('visibilitychange', () => {
         if (document.hidden && isStreaming) {
@@ -1354,6 +1551,7 @@
         galleryModeTab.classList.remove('active');
         actionButtons.classList.add('hidden');
         shutterSection.classList.add('visible');
+        continuousControls.classList.add('visible');
         scanArea.classList.add('camera-active');
 
         // ギャラリープレビューを非表示
@@ -1366,6 +1564,10 @@
         galleryModeTab.classList.add('active');
         actionButtons.classList.remove('hidden');
         shutterSection.classList.remove('visible');
+        continuousControls.classList.remove('visible');
+        if (isContinuousRunning) {
+          stopContinuousCapture();
+        }
         scanArea.classList.remove('camera-active');
 
         // カメラを停止
@@ -1566,6 +1768,144 @@
       startCamera();
     }
 
+    // ========== 連続スキャン ==========
+    function toggleContinuousMode() {
+      isContinuousMode = !isContinuousMode;
+
+      continuousToggleBtn.classList.toggle('active', isContinuousMode);
+
+      if (isContinuousMode) {
+        // 撮影モードを連続に切り替え
+        startContinuousCapture();
+      } else {
+        stopContinuousCapture();
+      }
+    }
+
+    function startContinuousCapture() {
+      if (!isCameraSupported()) return;
+
+      // 状態リセット
+      continuousFrames = [];
+      updateContinuousCount();
+      isContinuousRunning = true;
+      continuousDot.classList.add('active');
+
+      // カメラが止まっていたら再開
+      if (!isStreaming && !capturedImageData) {
+        startCamera();
+      }
+
+      // 1秒ごとにフレームをサンプリング
+      if (continuousIntervalId) {
+        clearInterval(continuousIntervalId);
+      }
+
+      let lastSample = null; // { data: Uint8ClampedArray, w, h }
+
+      const tempCanvas = document.createElement('canvas');
+      const tempCtx = tempCanvas.getContext('2d');
+      const TARGET_WIDTH = 320;
+      const TARGET_HEIGHT = 240;
+
+      continuousIntervalId = setInterval(() => {
+        if (!isStreaming || cameraVideo.videoWidth === 0) return;
+
+        tempCanvas.width = TARGET_WIDTH;
+        tempCanvas.height = TARGET_HEIGHT;
+        tempCtx.drawImage(cameraVideo, 0, 0, TARGET_WIDTH, TARGET_HEIGHT);
+
+        const imageData = tempCtx.getImageData(0, 0, TARGET_WIDTH, TARGET_HEIGHT);
+        const current = {
+          data: imageData.data,
+          w: TARGET_WIDTH,
+          h: TARGET_HEIGHT,
+        };
+
+        let diffScore = 1;
+        if (lastSample) {
+          diffScore = computeFrameDifference(lastSample, current);
+        }
+
+        const DIFF_THRESHOLD = 0.12; // 差分しきい値（小さいほど厳しくなる）
+
+        if (!lastSample || diffScore > DIFF_THRESHOLD) {
+          // キーフレームとして保存（フル品質ではなく軽量化）
+          const fullDataUrl = tempCanvas.toDataURL('image/jpeg', 0.4);
+
+          // さらに小さいサムネイル（将来UIに使うかもしれないので保持）
+          const thumbCanvas = document.createElement('canvas');
+          const thumbCtx = thumbCanvas.getContext('2d');
+          const THUMB_W = 80;
+          const THUMB_H = 60;
+          thumbCanvas.width = THUMB_W;
+          thumbCanvas.height = THUMB_H;
+          thumbCtx.drawImage(tempCanvas, 0, 0, THUMB_W, THUMB_H);
+          const thumbUrl = thumbCanvas.toDataURL('image/jpeg', 0.4);
+
+          continuousFrames.push({
+            dataUrl: fullDataUrl,
+            thumbUrl,
+            score: diffScore,
+          });
+
+          // 最大枚数制限（API料金対策）
+          const MAX_FRAMES = 8;
+          if (continuousFrames.length > MAX_FRAMES) {
+            continuousFrames.shift();
+          }
+
+          updateContinuousCount();
+          lastSample = current;
+        }
+      }, 1000); // 1秒ごと
+    }
+
+    function stopContinuousCapture() {
+      isContinuousRunning = false;
+      continuousDot.classList.remove('active');
+
+      if (continuousIntervalId) {
+        clearInterval(continuousIntervalId);
+        continuousIntervalId = null;
+      }
+    }
+
+    function computeFrameDifference(prev, current) {
+      // 簡易的に、数十ピクセルだけサンプリングして差分率を出す
+      const step = 24; // サンプリング間隔
+      let total = 0;
+      let diffSum = 0;
+
+      for (let y = 0; y < current.h; y += step) {
+        for (let x = 0; x < current.w; x += step) {
+          const idx = (y * current.w + x) * 4;
+          const r1 = prev.data[idx];
+          const g1 = prev.data[idx + 1];
+          const b1 = prev.data[idx + 2];
+
+          const r2 = current.data[idx];
+          const g2 = current.data[idx + 1];
+          const b2 = current.data[idx + 2];
+
+          const l1 = 0.299 * r1 + 0.587 * g1 + 0.114 * b1;
+          const l2 = 0.299 * r2 + 0.587 * g2 + 0.114 * b2;
+
+          const diff = Math.abs(l1 - l2) / 255;
+          diffSum += diff;
+          total++;
+        }
+      }
+
+      if (!total) return 0;
+      return diffSum / total;
+    }
+
+    function updateContinuousCount() {
+      const count = continuousFrames.length;
+      continuousCount.textContent = `${count}枚`;
+    }
+
     // ========== ファイル選択 ==========
     function handleFileSelect(event) {
       const file = event.target.files[0];
@@ -1598,27 +1938,287 @@
       event.target.value = '';
     }
 
+    // ========== OpenAI による OCR & 解析（サーバー経由） ==========
+    async function callOpenAiReceiptOcr(imageSrc, onProgress) {
+      if (onProgress) {
+        onProgress('サーバーに送信中...');
+      }
+
+      const response = await fetch('/api/receipt-ocr', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ imageSrc })
+      });
+
+      const text = await response.text();
+
+      if (!response.ok) {
+        let errorMessage = `サーバー側でエラーが発生しました (${response.status})`;
+        try {
+          const errorJson = JSON.parse(text);
+          if (errorJson.error) {
+            errorMessage += `: ${errorJson.error}`;
+          } else {
+            errorMessage += `: ${text}`;
+          }
+        } catch {
+          errorMessage += `: ${text}`;
+        }
+        console.error('サーバー側 OCR エラー:', { status: response.status, body: text });
+        throw new Error(errorMessage);
+      }
+
+      let data;
+      try {
+        data = JSON.parse(text);
+        console.log('サーバーからの解析結果:', data);
+      } catch (e) {
+        console.error('サーバー応答 JSON パースエラー:', e, text);
+        throw new Error('サーバーからの応答を JSON として解釈できませんでした。');
+      }
+
+      return data;
+    }
+
     // ========== 解析処理 ==========
     async function analyzeReceipt() {
       if (!hasImage) return;
 
       // ローディング表示
       loadingOverlay.classList.add('visible');
+      const loadingText = loadingOverlay.querySelector('.loading-text');
 
       // スキャンライン開始
       scanLine.classList.add('scanning');
 
-      // ダミーの解析処理（2秒待機）
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      try {
+        // 連続スキャンモードの場合は、溜めたフレームを順に解析
+        if (isContinuousMode && continuousFrames.length > 0) {
+          console.log('連続スキャンモードで解析開始。フレーム数:', continuousFrames.length);
+          const results = [];
 
-      // スキャンライン停止
-      scanLine.classList.remove('scanning');
+          // フレームごとに順次解析（API料金を抑えるため同時ではなく直列）
+          for (let i = 0; i < continuousFrames.length; i++) {
+            const frame = continuousFrames[i];
+            loadingText.textContent = `レシートを解析中... (${i + 1}/${continuousFrames.length})`;
+            console.log(`フレーム${i + 1}解析開始 - 画像サイズ:`, frame.dataUrl.length, '文字');
 
-      // ローディング非表示
-      loadingOverlay.classList.remove('visible');
+            const receiptData = await callOpenAiReceiptOcr(frame.dataUrl, (msg) => {
+              loadingText.textContent = `${msg} (${i + 1}/${continuousFrames.length})`;
+            });
+            results.push(receiptData);
+          }
 
-      // 結果を表示
-      displayResults(dummyReceipt);
+          console.log('連続スキャン解析完了:', results);
+
+          // 最後の結果を画面に表示（UIは1枚分を引き継ぎつつ、中身は配列で保持）
+          const last = results[results.length - 1];
+          currentReceiptData = {
+            isBatch: true,
+            receipts: results,
+          };
+          displayResults(last);
+
+          // 連続キャプチャは一旦停止
+          stopContinuousCapture();
+          isContinuousMode = false;
+          continuousToggleBtn.classList.remove('active');
+
+          // 連続フレームはクリア（料金対策）
+          continuousFrames = [];
+          updateContinuousCount();
+        } else {
+          // 通常モード：1枚だけ解析
+          // 画像を取得
+          let imageSrc = capturedImageData || scanPreview.src;
+          if (!imageSrc) {
+            throw new Error('画像が見つかりません');
+          }
+
+          loadingText.textContent = 'OpenAIで画像を解析中...';
+          console.log('解析開始 - 画像サイズ:', imageSrc.length, '文字');
+          const receiptData = await callOpenAiReceiptOcr(imageSrc, (msg) => {
+            loadingText.textContent = msg;
+            console.log('進捗:', msg);
+          });
+          console.log('解析完了:', receiptData);
+
+          currentReceiptData = receiptData;
+          displayResults(receiptData);
+        }
+
+        // スキャンライン停止
+        scanLine.classList.remove('scanning');
+
+        // ローディング非表示
+        loadingOverlay.classList.remove('visible');
+      } catch (error) {
+        console.error('解析エラー:', error);
+        console.error('エラー詳細:', {
+          message: error.message,
+          stack: error.stack,
+          name: error.name
+        });
+        scanLine.classList.remove('scanning');
+        loadingOverlay.classList.remove('visible');
+        
+        // より詳細なエラーメッセージ
+        let errorMsg = 'レシートの解析に失敗しました。\n\n';
+        if (error.message.includes('API キー')) {
+          errorMsg += 'APIキーが正しく設定されているか確認してください。';
+        } else if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+          errorMsg += 'APIキーが無効です。正しいキーを設定してください。';
+        } else if (error.message.includes('429') || error.message.includes('rate limit')) {
+          errorMsg += 'APIの利用制限に達しました。しばらく待ってから再試行してください。';
+        } else if (error.message.includes('画像')) {
+          errorMsg += '画像が正しく読み込まれていません。もう一度お試しください。';
+        } else {
+          errorMsg += `エラー: ${error.message}`;
+        }
+        errorMsg += '\n\nブラウザのコンソール（F12）で詳細を確認できます。';
+        
+        alert(errorMsg);
+      }
+    }
+
+    // ========== レシートテキスト解析 ==========
+    function parseReceiptText(text) {
+      const lines = text.split('\n').filter(line => line.trim().length > 0);
+      
+      let storeName = '店舗名不明';
+      let date = new Date().toLocaleDateString('ja-JP', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      let total = '0';
+      const items = [];
+
+      // 店舗名の検出（最初の数行から）
+      for (let i = 0; i < Math.min(5, lines.length); i++) {
+        const line = lines[i].trim();
+        // 店舗名らしい行（長さが適切で、金額パターンを含まない）
+        if (line.length > 2 && line.length < 30 && !/\d{3,}/.test(line)) {
+          // 一般的な店舗名のキーワードを除外
+          if (!line.match(/^(領収|レシート|合計|小計|税|日付|時刻)/)) {
+            storeName = line;
+            break;
+          }
+        }
+      }
+
+      // 日付の検出
+      const datePatterns = [
+        /(\d{4})[年\/\-](\d{1,2})[月\/\-](\d{1,2})/,
+        /(\d{1,2})[月\/\-](\d{1,2})[日\/\-]/,
+        /(\d{4})\/(\d{2})\/(\d{2})/
+      ];
+      for (const line of lines) {
+        for (const pattern of datePatterns) {
+          const match = line.match(pattern);
+          if (match) {
+            try {
+              const year = match[1]?.length === 4 ? match[1] : new Date().getFullYear();
+              const month = match[2] || match[1];
+              const day = match[3] || match[2];
+              const timeMatch = line.match(/(\d{1,2}):(\d{2})/);
+              const hour = timeMatch ? timeMatch[1] : new Date().getHours();
+              const minute = timeMatch ? timeMatch[2] : new Date().getMinutes();
+              date = `${year}年${month}月${day}日 ${hour}:${minute}`;
+              break;
+            } catch (e) {
+              // 日付解析エラーは無視
+            }
+          }
+        }
+        if (date !== '') break;
+      }
+
+      // 金額と明細の抽出
+      const pricePattern = /[¥￥]?\s*(\d{1,3}(?:[,，]\d{3})*)/g;
+      const totalPatterns = [/合計[¥￥]?\s*(\d{1,3}(?:[,，]\d{3})*)/, /計[¥￥]?\s*(\d{1,3}(?:[,，]\d{3})*)/, /TOTAL[¥￥]?\s*(\d{1,3}(?:[,，]\d{3})*)/i];
+      
+      // 合計金額の検出
+      for (const line of lines) {
+        for (const pattern of totalPatterns) {
+          const match = line.match(pattern);
+          if (match) {
+            total = match[1].replace(/[,，]/g, '');
+            break;
+          }
+        }
+        if (total !== '0') break;
+      }
+
+      // 最後の大きな金額を合計として使用（合計が見つからない場合）
+      if (total === '0') {
+        const allPrices = [];
+        for (const line of lines) {
+          const matches = [...line.matchAll(pricePattern)];
+          for (const match of matches) {
+            const price = parseInt(match[1].replace(/[,，]/g, ''));
+            if (price > 100) allPrices.push(price);
+          }
+        }
+        if (allPrices.length > 0) {
+          total = Math.max(...allPrices).toString();
+        }
+      }
+
+      // 明細の抽出（金額が含まれる行から）
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        const priceMatches = [...line.matchAll(pricePattern)];
+        
+        if (priceMatches.length > 0) {
+          // 合計や税などの行は除外
+          if (line.match(/^(合計|小計|税|消費税|内税|外税|TOTAL|SUB)/)) {
+            continue;
+          }
+
+          // 金額を抽出
+          const prices = priceMatches.map(m => parseInt(m[1].replace(/[,，]/g, '')));
+          const itemPrice = prices[prices.length - 1]; // 最後の金額を使用
+
+          if (itemPrice > 0 && itemPrice < 1000000) { // 妥当な範囲
+            // 商品名を抽出（金額の前の部分）
+            const priceIndex = line.lastIndexOf(priceMatches[priceMatches.length - 1][0]);
+            let itemName = line.substring(0, priceIndex).trim();
+            
+            // 商品名が空の場合は行全体から金額を除いた部分
+            if (!itemName || itemName.length < 2) {
+              itemName = line.replace(pricePattern, '').trim();
+            }
+
+            // 商品名が取得できた場合のみ追加
+            if (itemName && itemName.length > 0) {
+              items.push({
+                name: itemName,
+                price: itemPrice.toLocaleString('ja-JP')
+              });
+            }
+          }
+        }
+      }
+
+      // 明細が取得できなかった場合のフォールバック
+      if (items.length === 0 && total !== '0') {
+        items.push({
+          name: '商品',
+          price: total
+        });
+      }
+
+      return {
+        storeName: storeName || '店舗名不明',
+        date: date,
+        total: parseInt(total).toLocaleString('ja-JP'),
+        items: items.slice(0, 20) // 最大20項目
+      };
     }
 
     // 結果表示関数
@@ -1628,22 +2228,56 @@
       receiptDate.textContent = data.date;
       totalAmount.textContent = data.total;
 
+      // カテゴリボタンを生成
+      categoryButtons.innerHTML = '';
+      categories.forEach(category => {
+        const btn = document.createElement('button');
+        btn.className = `category-btn ${category.class}`;
+        btn.textContent = `${category.icon} ${category.name}`;
+        btn.dataset.categoryId = category.id;
+        btn.addEventListener('click', () => selectCategory(category.id));
+        categoryButtons.appendChild(btn);
+      });
+
       // 明細をクリア
       resultItems.innerHTML = '';
 
       // 明細を追加
-      data.items.forEach((item, index) => {
+      data.items.forEach((item) => {
         const li = document.createElement('li');
         li.className = 'result-item';
-        li.innerHTML = `
-          <span class="item-name">${item.name}</span>
-          <span class="item-price">¥${item.price}</span>
-        `;
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'item-name';
+        nameSpan.textContent = item.name;
+
+        // 品目ごとのカテゴリバッジ
+        if (item.categoryId) {
+          const cat = categories.find((c) => c.id === item.categoryId);
+          const badge = document.createElement('span');
+          badge.className = 'item-category';
+          badge.textContent = cat ? cat.name : 'その他';
+          nameSpan.appendChild(badge);
+        }
+
+        const priceSpan = document.createElement('span');
+        priceSpan.className = 'item-price';
+        priceSpan.textContent = `¥${item.price}`;
+
+        li.appendChild(nameSpan);
+        li.appendChild(priceSpan);
+
         resultItems.appendChild(li);
       });
 
       // セクションを表示
       resultSection.classList.add('visible');
+      categorySection.style.display = 'block';
+
+      // レシート全体のカテゴリがあれば自動選択
+      if (data.categoryId) {
+        selectCategory(data.categoryId);
+      }
 
       // カードアニメーション
       requestAnimationFrame(() => {
@@ -1662,6 +2296,43 @@
       setTimeout(() => {
         resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 300);
+    }
+
+    // カテゴリ選択
+    function selectCategory(categoryId) {
+      selectedCategory = categoryId;
+      
+      // ボタンの状態を更新
+      categoryButtons.querySelectorAll('.category-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.categoryId === categoryId) {
+          btn.classList.add('active');
+        }
+      });
+
+      // カテゴリ情報を保存（将来の履歴機能用）
+      if (currentReceiptData) {
+        currentReceiptData.category = categoryId;
+        // ローカルストレージに保存（オプション）
+        try {
+          const history = JSON.parse(localStorage.getItem('receiptHistory') || '[]');
+          history.push({
+            ...currentReceiptData,
+            timestamp: new Date().toISOString()
+          });
+          // 最新100件のみ保持
+          localStorage.setItem('receiptHistory', JSON.stringify(history.slice(-100)));
+        } catch (e) {
+          console.warn('履歴の保存に失敗:', e);
+        }
+      }
+    }
+
+    // HTMLエスケープ
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
     }
 
     // ========== 初期化実行 ==========

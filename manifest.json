@@ -1,0 +1,24 @@
+{
+  "name": "領収読 - レシート読み取り",
+  "short_name": "領収読",
+  "description": "和モダンなレシート読み取りアプリ",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f5f1eb",
+  "theme_color": "#c94a4a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

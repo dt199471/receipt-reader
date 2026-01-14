@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- 背景：朱色の正方形 -->
+  <rect width="512" height="512" fill="#c94a4a" rx="64"/>
+
+  <!-- 和紙風テクスチャ（微妙なノイズ） -->
+  <defs>
+    <filter id="noise">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+    </filter>
+  </defs>
+  <rect width="512" height="512" filter="url(#noise)" opacity="0.05" rx="64"/>
+
+  <!-- 「領」の文字 -->
+  <text
+    x="256"
+    y="340"
+    text-anchor="middle"
+    font-family="'Noto Serif JP', serif"
+    font-size="280"
+    font-weight="700"
+    fill="#ffffff"
+  >領</text>
+
+  <!-- 装飾的な印鑑風の縁取り -->
+  <rect
+    x="40"
+    y="40"
+    width="432"
+    height="432"
+    fill="none"
+    stroke="#ffffff"
+    stroke-width="8"
+    rx="48"
+    opacity="0.3"
+  />
+</svg>

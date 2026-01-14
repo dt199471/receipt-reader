@@ -1,0 +1,1684 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>領収読 - レシート読み取り</title>
+  <meta name="description" content="和モダンなレシート読み取りアプリ">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#c94a4a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="領収読">
+  <link rel="apple-touch-icon" href="icons/icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --sumi: #2d2d2d;
+      --sumi-light: #4a4a4a;
+      --shu: #c94a4a;
+      --shu-dark: #a33a3a;
+      --shu-glow: rgba(201, 74, 74, 0.4);
+      --ai: #3d5a6e;
+      --ai-light: #5a7a8e;
+      --kinari: #f5f1eb;
+      --washi: #faf8f5;
+      --kage: rgba(45, 45, 45, 0.08);
+      --kage-deep: rgba(45, 45, 45, 0.15);
+      /* safe-area用変数 */
+      --safe-area-top: env(safe-area-inset-top, 0px);
+      --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-area-left: env(safe-area-inset-left, 0px);
+      --safe-area-right: env(safe-area-inset-right, 0px);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      font-size: 16px;
+    }
+
+    body {
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      background-color: var(--kinari);
+      color: var(--sumi);
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      position: relative;
+      overflow-x: hidden;
+      padding-top: var(--safe-area-top);
+      padding-bottom: var(--safe-area-bottom);
+      padding-left: var(--safe-area-left);
+      padding-right: var(--safe-area-right);
+    }
+
+    /* 和紙テクスチャ背景 */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image:
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* 装飾的な波紋パターン */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -50%;
+      right: -30%;
+      width: 80%;
+      height: 80%;
+      background: radial-gradient(ellipse, var(--shu-glow) 0%, transparent 70%);
+      opacity: 0.15;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app-container {
+      position: relative;
+      z-index: 1;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 1.25rem 2rem;
+      min-height: 100vh;
+    }
+
+    /* ========== ヘッダー ========== */
+    header {
+      padding: 1.5rem 0 1rem;
+      text-align: center;
+      opacity: 0;
+      animation: fadeSlideDown 0.8s ease-out 0.2s forwards;
+    }
+
+    .logo {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--sumi);
+      letter-spacing: 0.3em;
+      position: relative;
+      display: inline-block;
+    }
+
+    .logo::before {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--shu), transparent);
+    }
+
+    .logo-sub {
+      display: block;
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: var(--sumi-light);
+      letter-spacing: 0.2em;
+      margin-top: 0.5rem;
+    }
+
+    /* ========== スキャンエリア ========== */
+    .scan-section {
+      margin: 1.5rem 0;
+      opacity: 0;
+      animation: fadeSlideUp 0.8s ease-out 0.4s forwards;
+    }
+
+    .scan-area {
+      position: relative;
+      aspect-ratio: 3 / 4;
+      background: var(--washi);
+      border-radius: 4px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      touch-action: manipulation;
+    }
+
+    .scan-area:hover {
+      transform: scale(1.01);
+    }
+
+    .scan-area.camera-active {
+      cursor: default;
+    }
+
+    .scan-area.camera-active:hover {
+      transform: none;
+    }
+
+    /* 障子風フレーム */
+    .scan-frame {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .scan-frame::before {
+      content: '';
+      position: absolute;
+      inset: 8px;
+      border: 2px solid var(--sumi);
+      border-radius: 2px;
+      opacity: 0.15;
+    }
+
+    /* 墨で描いたような不均一なボーダー */
+    .scan-frame-corner {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      opacity: 0.8;
+    }
+
+    .scan-frame-corner--tl {
+      top: 12px;
+      left: 12px;
+      border-top: 3px solid var(--sumi);
+      border-left: 3px solid var(--sumi);
+      border-top-left-radius: 2px;
+    }
+
+    .scan-frame-corner--tr {
+      top: 12px;
+      right: 12px;
+      border-top: 3px solid var(--sumi);
+      border-right: 3px solid var(--sumi);
+      border-top-right-radius: 2px;
+    }
+
+    .scan-frame-corner--bl {
+      bottom: 12px;
+      left: 12px;
+      border-bottom: 3px solid var(--sumi);
+      border-left: 3px solid var(--sumi);
+      border-bottom-left-radius: 2px;
+    }
+
+    .scan-frame-corner--br {
+      bottom: 12px;
+      right: 12px;
+      border-bottom: 3px solid var(--sumi);
+      border-right: 3px solid var(--sumi);
+      border-bottom-right-radius: 2px;
+    }
+
+    /* 障子の光グロー効果 */
+    .scan-glow {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(255,255,255,0.6) 0%, transparent 70%);
+      animation: pulseGlow 3s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .camera-active .scan-glow {
+      display: none;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.6; }
+    }
+
+    .scan-content {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+      transition: opacity 0.3s ease;
+    }
+
+    .scan-icon {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 1rem;
+      opacity: 0.4;
+      transition: opacity 0.3s ease;
+    }
+
+    .scan-area:hover .scan-icon {
+      opacity: 0.6;
+    }
+
+    .scan-text {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 1rem;
+      color: var(--sumi-light);
+      letter-spacing: 0.1em;
+    }
+
+    .scan-preview {
+      position: absolute;
+      inset: 0;
+      object-fit: contain;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      padding: 20px;
+    }
+
+    .scan-preview.visible {
+      opacity: 1;
+    }
+
+    /* ========== カメラビデオ要素 ========== */
+    .camera-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      background: #000;
+    }
+
+    .camera-video.visible {
+      opacity: 1;
+    }
+
+    /* キャプチャプレビュー（撮影後の静止画） */
+    .capture-preview {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .capture-preview.visible {
+      opacity: 1;
+    }
+
+    /* キャプチャ用キャンバス（非表示） */
+    .capture-canvas {
+      display: none;
+    }
+
+    /* シャッターエフェクト */
+    .shutter-effect {
+      position: absolute;
+      inset: 0;
+      background: white;
+      z-index: 10;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .shutter-effect.flash {
+      animation: shutterFlash 0.2s ease-out;
+    }
+
+    @keyframes shutterFlash {
+      0% { opacity: 0.9; }
+      100% { opacity: 0; }
+    }
+
+    /* カメラ切り替えボタン */
+    .camera-switch-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(45, 45, 45, 0.6);
+      border: none;
+      cursor: pointer;
+      z-index: 5;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      touch-action: manipulation;
+    }
+
+    .camera-switch-btn.visible {
+      display: flex;
+    }
+
+    .camera-switch-btn:hover {
+      background: rgba(45, 45, 45, 0.8);
+      transform: scale(1.05);
+    }
+
+    .camera-switch-btn:active {
+      transform: scale(0.95);
+    }
+
+    .camera-switch-btn svg {
+      width: 24px;
+      height: 24px;
+      color: white;
+    }
+
+    /* 撮り直しボタン */
+    .retake-btn {
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 0.75rem 1.5rem;
+      background: rgba(250, 248, 245, 0.95);
+      border: none;
+      border-radius: 20px;
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 0.9rem;
+      color: var(--ai);
+      cursor: pointer;
+      z-index: 5;
+      display: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+      touch-action: manipulation;
+    }
+
+    .retake-btn.visible {
+      display: block;
+    }
+
+    .retake-btn:hover {
+      background: white;
+      color: var(--shu);
+    }
+
+    .retake-btn:active {
+      transform: translateX(-50%) scale(0.95);
+    }
+
+    /* カメラエラーメッセージ */
+    .camera-error {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 3;
+      padding: 20px;
+      text-align: center;
+      background: rgba(250, 248, 245, 0.95);
+    }
+
+    .camera-error.visible {
+      display: flex;
+    }
+
+    .camera-error-icon {
+      width: 60px;
+      height: 60px;
+      margin-bottom: 1rem;
+      color: var(--shu);
+      opacity: 0.8;
+    }
+
+    .camera-error-title {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 1.1rem;
+      color: var(--sumi);
+      margin-bottom: 0.5rem;
+    }
+
+    .camera-error-message {
+      font-size: 0.85rem;
+      color: var(--sumi-light);
+      line-height: 1.6;
+      max-width: 280px;
+    }
+
+    .camera-error-fallback {
+      margin-top: 1rem;
+      padding: 0.75rem 1.5rem;
+      background: var(--ai);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      touch-action: manipulation;
+    }
+
+    .camera-error-fallback:hover {
+      background: var(--ai-light);
+    }
+
+    /* スキャンライン効果 */
+    .scan-line {
+      position: absolute;
+      left: 20px;
+      right: 20px;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--shu), transparent);
+      box-shadow: 0 0 20px var(--shu-glow), 0 0 40px var(--shu-glow);
+      z-index: 3;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .scan-line.scanning {
+      opacity: 1;
+      animation: scanMove 2s ease-in-out infinite;
+    }
+
+    @keyframes scanMove {
+      0% { top: 20px; }
+      50% { top: calc(100% - 23px); }
+      100% { top: 20px; }
+    }
+
+    /* ========== モード切り替えタブ ========== */
+    .mode-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1rem;
+      background: var(--kage);
+      border-radius: 8px;
+      padding: 4px;
+      opacity: 0;
+      animation: fadeSlideUp 0.8s ease-out 0.5s forwards;
+    }
+
+    .mode-tab {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      min-height: 48px;
+      border: none;
+      border-radius: 6px;
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--sumi-light);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      touch-action: manipulation;
+    }
+
+    .mode-tab.active {
+      background: var(--washi);
+      color: var(--sumi);
+      box-shadow: 0 2px 8px var(--kage);
+    }
+
+    .mode-tab:not(.active):hover {
+      color: var(--sumi);
+    }
+
+    .mode-tab-icon {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* ========== アクションボタン ========== */
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      margin: 1.5rem 0;
+      opacity: 0;
+      animation: fadeSlideUp 0.8s ease-out 0.6s forwards;
+    }
+
+    /* カメラモード時は非表示 */
+    .action-buttons.hidden {
+      display: none;
+    }
+
+    .btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1rem;
+      min-height: 48px;
+      border: none;
+      border-radius: 4px;
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+
+    .btn-primary {
+      background: var(--shu);
+      color: white;
+      box-shadow: 0 4px 15px var(--shu-glow);
+    }
+
+    .btn-primary:hover {
+      background: var(--shu-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px var(--shu-glow);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    /* 朱印エフェクト */
+    .btn-primary::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(255,255,255,0.3) 0%, transparent 70%);
+      opacity: 0;
+      transform: scale(0);
+      transition: all 0.4s ease;
+    }
+
+    .btn-primary:active::after {
+      opacity: 1;
+      transform: scale(2);
+    }
+
+    .btn-secondary {
+      background: var(--washi);
+      color: var(--ai);
+      border: 1px solid var(--kage-deep);
+    }
+
+    .btn-secondary:hover {
+      background: white;
+      border-color: var(--ai);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px var(--kage);
+    }
+
+    .btn-icon {
+      width: 24px;
+      height: 24px;
+    }
+
+    /* ========== シャッターボタン（カメラモード用） ========== */
+    .shutter-section {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      margin: 1.5rem 0;
+      gap: 2rem;
+      opacity: 0;
+      animation: fadeSlideUp 0.4s ease-out forwards;
+    }
+
+    .shutter-section.visible {
+      display: flex;
+    }
+
+    .shutter-btn {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--shu);
+      border: 4px solid white;
+      box-shadow: 0 4px 20px var(--shu-glow), 0 0 0 4px var(--shu);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      touch-action: manipulation;
+    }
+
+    .shutter-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 25px var(--shu-glow), 0 0 0 4px var(--shu-dark);
+    }
+
+    .shutter-btn:active {
+      transform: scale(0.95);
+    }
+
+    .shutter-btn::before {
+      content: '';
+      position: absolute;
+      inset: 6px;
+      border-radius: 50%;
+      background: white;
+      opacity: 0;
+      transition: opacity 0.1s ease;
+    }
+
+    .shutter-btn:active::before {
+      opacity: 0.3;
+    }
+
+    /* 解析ボタン */
+    .analyze-section {
+      margin: 1rem 0;
+      opacity: 0;
+      animation: fadeSlideUp 0.8s ease-out 0.7s forwards;
+    }
+
+    .btn-analyze {
+      width: 100%;
+      padding: 1.2rem;
+      background: var(--ai);
+      color: white;
+      box-shadow: 0 4px 15px rgba(61, 90, 110, 0.3);
+    }
+
+    .btn-analyze:hover {
+      background: var(--ai-light);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(61, 90, 110, 0.4);
+    }
+
+    .btn-analyze:disabled {
+      background: var(--kage-deep);
+      color: var(--sumi-light);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* ========== 結果表示エリア ========== */
+    .result-section {
+      margin: 2rem 0;
+      display: none;
+    }
+
+    .result-section.visible {
+      display: block;
+    }
+
+    .result-card {
+      background: var(--washi);
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 20px var(--kage);
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    .result-card.animate {
+      animation: slideUp 0.6s ease-out forwards;
+    }
+
+    @keyframes slideUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* 和紙風テクスチャ on カード */
+    .result-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      opacity: 0.02;
+      pointer-events: none;
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--kage);
+    }
+
+    .store-name {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--sumi);
+    }
+
+    .receipt-date {
+      font-size: 0.85rem;
+      color: var(--sumi-light);
+    }
+
+    .result-total {
+      text-align: right;
+      margin-bottom: 1.5rem;
+    }
+
+    .total-label {
+      font-size: 0.8rem;
+      color: var(--sumi-light);
+      margin-bottom: 0.25rem;
+    }
+
+    .total-amount {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--shu);
+    }
+
+    .total-amount::before {
+      content: '¥';
+      font-size: 1.2rem;
+      margin-right: 0.1rem;
+    }
+
+    .result-items {
+      list-style: none;
+    }
+
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 0;
+      border-bottom: 1px dashed var(--kage);
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+
+    .result-item.animate {
+      animation: slideRight 0.4s ease-out forwards;
+    }
+
+    @keyframes slideRight {
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .result-item:last-child {
+      border-bottom: none;
+    }
+
+    .item-name {
+      font-size: 0.95rem;
+      color: var(--sumi);
+    }
+
+    .item-price {
+      font-weight: 500;
+      color: var(--ai);
+    }
+
+    /* ========== 履歴ボタン ========== */
+    .history-section {
+      margin: 2rem 0;
+      text-align: center;
+      opacity: 0;
+      animation: fadeSlideUp 0.8s ease-out 0.8s forwards;
+    }
+
+    .history-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      min-height: 48px;
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 0.9rem;
+      color: var(--sumi-light);
+      text-decoration: none;
+      border: 1px dashed var(--kage-deep);
+      border-radius: 30px;
+      transition: all 0.3s ease;
+    }
+
+    .history-link:hover {
+      color: var(--ai);
+      border-color: var(--ai);
+      background: rgba(61, 90, 110, 0.05);
+    }
+
+    .history-icon {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* ========== 隠しinput ========== */
+    .hidden-input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* ========== アニメーション ========== */
+    @keyframes fadeSlideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ========== ローディング ========== */
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(245, 241, 235, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .loading-overlay.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .loading-circle {
+      width: 60px;
+      height: 60px;
+      border: 3px solid var(--kage);
+      border-top-color: var(--shu);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      margin-top: 1rem;
+      font-family: 'Noto Serif JP', serif;
+      font-size: 1rem;
+      color: var(--sumi-light);
+      letter-spacing: 0.1em;
+    }
+
+    /* ========== HTTPS警告 ========== */
+    .https-warning {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 0.75rem 1rem;
+      padding-top: calc(0.75rem + var(--safe-area-top));
+      background: rgba(201, 74, 74, 0.95);
+      color: white;
+      font-size: 0.85rem;
+      text-align: center;
+      z-index: 200;
+    }
+
+    .https-warning.visible {
+      display: block;
+    }
+
+    /* ========== レスポンシブ ========== */
+    @media (min-width: 481px) {
+      .app-container {
+        padding: 0 2rem 3rem;
+      }
+
+      .logo {
+        font-size: 3rem;
+      }
+
+      .scan-area {
+        aspect-ratio: 4 / 5;
+      }
+    }
+
+    /* 小さい画面用の調整 */
+    @media (max-height: 700px) {
+      header {
+        padding: 1rem 0 0.5rem;
+      }
+
+      .logo {
+        font-size: 2rem;
+      }
+
+      .logo-sub {
+        font-size: 0.7rem;
+        margin-top: 0.25rem;
+      }
+
+      .scan-section {
+        margin: 1rem 0;
+      }
+
+      .scan-area {
+        aspect-ratio: 4 / 5;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- HTTPS警告 -->
+  <div class="https-warning" id="httpsWarning">
+    カメラ機能を使用するには、HTTPS接続が必要です
+  </div>
+
+  <div class="app-container">
+    <!-- ヘッダー -->
+    <header>
+      <h1 class="logo">
+        領収読
+        <span class="logo-sub">りょうしゅうよみ</span>
+      </h1>
+    </header>
+
+    <!-- モード切り替えタブ -->
+    <div class="mode-tabs">
+      <button class="mode-tab active" id="cameraModeTab" aria-label="カメラモード">
+        <svg class="mode-tab-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="2" fill="none"/>
+        </svg>
+        カメラ
+      </button>
+      <button class="mode-tab" id="galleryModeTab" aria-label="ギャラリーモード">
+        <svg class="mode-tab-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+          <path d="M3 15l5-5 4 4 5-5 4 4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
+        </svg>
+        ギャラリー
+      </button>
+    </div>
+
+    <!-- スキャンエリア -->
+    <section class="scan-section" aria-label="レシートスキャンエリア">
+      <div class="scan-area" id="scanArea" role="button" tabindex="0" aria-label="クリックしてレシートを撮影または選択">
+        <!-- 障子風グロー -->
+        <div class="scan-glow"></div>
+
+        <!-- フレーム -->
+        <div class="scan-frame">
+          <div class="scan-frame-corner scan-frame-corner--tl"></div>
+          <div class="scan-frame-corner scan-frame-corner--tr"></div>
+          <div class="scan-frame-corner scan-frame-corner--bl"></div>
+          <div class="scan-frame-corner scan-frame-corner--br"></div>
+        </div>
+
+        <!-- プレースホルダーコンテンツ -->
+        <div class="scan-content" id="scanContent">
+          <svg class="scan-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="15" width="60" height="50" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+            <path d="M20 55 L32 40 L42 48 L55 32 L65 45" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="30" cy="30" r="6" stroke="currentColor" stroke-width="2" fill="none"/>
+            <path d="M40 5 L40 12 M40 68 L40 75 M5 40 L12 40 M68 40 L75 40" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+          </svg>
+          <p class="scan-text">タップしてレシートを読み込む</p>
+        </div>
+
+        <!-- カメラビデオ -->
+        <video class="camera-video" id="cameraVideo" autoplay playsinline muted></video>
+
+        <!-- キャプチャプレビュー（撮影後の静止画） -->
+        <img class="capture-preview" id="capturePreview" alt="撮影プレビュー">
+
+        <!-- 画像プレビュー（ギャラリーから） -->
+        <img class="scan-preview" id="scanPreview" alt="レシートプレビュー">
+
+        <!-- キャプチャ用キャンバス -->
+        <canvas class="capture-canvas" id="captureCanvas"></canvas>
+
+        <!-- シャッターエフェクト -->
+        <div class="shutter-effect" id="shutterEffect"></div>
+
+        <!-- カメラ切り替えボタン -->
+        <button class="camera-switch-btn" id="cameraSwitchBtn" aria-label="カメラを切り替え">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 5h-3.17L15 3H9L7.17 5H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V7a2 2 0 00-2-2z" stroke="currentColor" stroke-width="2" fill="none"/>
+            <path d="M12 17a4 4 0 100-8 4 4 0 000 8z" stroke="currentColor" stroke-width="2" fill="none"/>
+            <path d="M9 12h6M12 9l-2 3 2 3M12 9l2 3-2 3" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <!-- 撮り直しボタン -->
+        <button class="retake-btn" id="retakeBtn">撮り直す</button>
+
+        <!-- カメラエラー表示 -->
+        <div class="camera-error" id="cameraError">
+          <svg class="camera-error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+            <path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <h3 class="camera-error-title" id="cameraErrorTitle">カメラにアクセスできません</h3>
+          <p class="camera-error-message" id="cameraErrorMessage">カメラへのアクセスが拒否されました。設定からカメラへのアクセスを許可してください。</p>
+          <button class="camera-error-fallback" id="cameraErrorFallback">ギャラリーから選択</button>
+        </div>
+
+        <!-- スキャンライン -->
+        <div class="scan-line" id="scanLine"></div>
+      </div>
+    </section>
+
+    <!-- アクションボタン（ギャラリーモード用） -->
+    <div class="action-buttons hidden" id="actionButtons">
+      <button class="btn btn-primary" id="cameraBtn" aria-label="カメラで撮影">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="2" fill="none"/>
+        </svg>
+        撮影
+      </button>
+      <button class="btn btn-secondary" id="galleryBtn" aria-label="ギャラリーから選択">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+          <path d="M3 15l5-5 4 4 5-5 4 4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
+        </svg>
+        選択
+      </button>
+    </div>
+
+    <!-- シャッターボタン（カメラモード用） -->
+    <div class="shutter-section" id="shutterSection">
+      <button class="shutter-btn" id="shutterBtn" aria-label="シャッター"></button>
+    </div>
+
+    <!-- 解析ボタン -->
+    <div class="analyze-section">
+      <button class="btn btn-analyze" id="analyzeBtn" disabled aria-label="レシートを解析">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M14 2v6h6M9 15h6M9 11h6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </svg>
+        レシートを解析する
+      </button>
+    </div>
+
+    <!-- 結果表示エリア -->
+    <section class="result-section" id="resultSection" aria-label="読み取り結果">
+      <div class="result-card" id="resultCard">
+        <div class="result-header">
+          <div>
+            <h2 class="store-name" id="storeName">-</h2>
+            <p class="receipt-date" id="receiptDate">-</p>
+          </div>
+        </div>
+        <div class="result-total">
+          <p class="total-label">合計金額</p>
+          <p class="total-amount" id="totalAmount">-</p>
+        </div>
+        <ul class="result-items" id="resultItems">
+          <!-- 動的に追加 -->
+        </ul>
+      </div>
+    </section>
+
+    <!-- 履歴リンク -->
+    <div class="history-section">
+      <a href="#" class="history-link" aria-label="履歴を見る">
+        <svg class="history-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+          <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </svg>
+        過去の履歴を見る
+      </a>
+    </div>
+
+    <!-- 隠しファイル入力 -->
+    <input type="file" class="hidden-input" id="cameraInput" accept="image/*" capture="environment">
+    <input type="file" class="hidden-input" id="galleryInput" accept="image/*">
+  </div>
+
+  <!-- ローディングオーバーレイ -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-circle"></div>
+    <p class="loading-text">解析中...</p>
+  </div>
+
+  <script>
+    // ========== DOM要素 ==========
+    const scanArea = document.getElementById('scanArea');
+    const scanContent = document.getElementById('scanContent');
+    const scanPreview = document.getElementById('scanPreview');
+    const scanLine = document.getElementById('scanLine');
+    const cameraBtn = document.getElementById('cameraBtn');
+    const galleryBtn = document.getElementById('galleryBtn');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const cameraInput = document.getElementById('cameraInput');
+    const galleryInput = document.getElementById('galleryInput');
+    const resultSection = document.getElementById('resultSection');
+    const resultCard = document.getElementById('resultCard');
+    const storeName = document.getElementById('storeName');
+    const receiptDate = document.getElementById('receiptDate');
+    const totalAmount = document.getElementById('totalAmount');
+    const resultItems = document.getElementById('resultItems');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+
+    // カメラ関連要素
+    const cameraVideo = document.getElementById('cameraVideo');
+    const captureCanvas = document.getElementById('captureCanvas');
+    const capturePreview = document.getElementById('capturePreview');
+    const shutterEffect = document.getElementById('shutterEffect');
+    const cameraSwitchBtn = document.getElementById('cameraSwitchBtn');
+    const retakeBtn = document.getElementById('retakeBtn');
+    const cameraError = document.getElementById('cameraError');
+    const cameraErrorTitle = document.getElementById('cameraErrorTitle');
+    const cameraErrorMessage = document.getElementById('cameraErrorMessage');
+    const cameraErrorFallback = document.getElementById('cameraErrorFallback');
+    const httpsWarning = document.getElementById('httpsWarning');
+
+    // モード切り替え要素
+    const cameraModeTab = document.getElementById('cameraModeTab');
+    const galleryModeTab = document.getElementById('galleryModeTab');
+    const actionButtons = document.getElementById('actionButtons');
+    const shutterSection = document.getElementById('shutterSection');
+    const shutterBtn = document.getElementById('shutterBtn');
+
+    // ========== 状態管理 ==========
+    let hasImage = false;
+    let isStreaming = false;
+    let currentFacingMode = 'environment'; // 'environment'（背面）or 'user'（前面）
+    let capturedImageData = null;
+    let currentStream = null;
+    let currentMode = 'camera'; // 'camera' or 'gallery'
+    let availableCameras = [];
+
+    // ========== ダミーデータ ==========
+    const dummyReceipt = {
+      storeName: '和菓子処 花月堂',
+      date: '2025年1月14日 14:32',
+      total: '2,580',
+      items: [
+        { name: '季節の上生菓子 (3個入)', price: '980' },
+        { name: '抹茶どらやき', price: '320' },
+        { name: '黒糖わらび餅', price: '450' },
+        { name: '栗きんとん', price: '580' },
+        { name: '手提げ袋', price: '50' },
+        { name: '消費税 (10%)', price: '200' }
+      ]
+    };
+
+    // ========== 初期化 ==========
+    async function init() {
+      // HTTPS チェック
+      checkHttps();
+
+      // カメラの利用可能性をチェック
+      await checkCameraAvailability();
+
+      // イベントリスナーの設定
+      setupEventListeners();
+
+      // カメラモードで初期化
+      if (isCameraSupported()) {
+        switchToMode('camera');
+      } else {
+        // カメラが使えない場合はギャラリーモードに
+        switchToMode('gallery');
+      }
+    }
+
+    // HTTPSチェック
+    function checkHttps() {
+      const isSecure = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+      if (!isSecure) {
+        httpsWarning.classList.add('visible');
+      }
+    }
+
+    // カメラサポートチェック
+    function isCameraSupported() {
+      return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+    }
+
+    // カメラの利用可能性をチェック
+    async function checkCameraAvailability() {
+      if (!isCameraSupported()) {
+        return;
+      }
+
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        availableCameras = devices.filter(device => device.kind === 'videoinput');
+
+        // カメラが2つ以上ある場合のみ切り替えボタンを表示可能に
+        if (availableCameras.length <= 1) {
+          cameraSwitchBtn.style.display = 'none';
+        }
+      } catch (error) {
+        console.warn('カメラ情報の取得に失敗:', error);
+      }
+    }
+
+    // イベントリスナーの設定
+    function setupEventListeners() {
+      // モード切り替えタブ
+      cameraModeTab.addEventListener('click', () => switchToMode('camera'));
+      galleryModeTab.addEventListener('click', () => switchToMode('gallery'));
+
+      // ギャラリーモードのボタン
+      cameraBtn.addEventListener('click', () => cameraInput.click());
+      galleryBtn.addEventListener('click', () => galleryInput.click());
+
+      // スキャンエリアクリック（ギャラリーモード時のみ）
+      scanArea.addEventListener('click', handleScanAreaClick);
+      scanArea.addEventListener('keydown', (e) => {
+        if ((e.key === 'Enter' || e.key === ' ') && currentMode === 'gallery') {
+          e.preventDefault();
+          galleryInput.click();
+        }
+      });
+
+      // ファイル選択
+      cameraInput.addEventListener('change', handleFileSelect);
+      galleryInput.addEventListener('change', handleFileSelect);
+
+      // カメラ関連
+      shutterBtn.addEventListener('click', capturePhoto);
+      cameraSwitchBtn.addEventListener('click', switchCamera);
+      retakeBtn.addEventListener('click', retakePhoto);
+      cameraErrorFallback.addEventListener('click', () => {
+        switchToMode('gallery');
+        galleryInput.click();
+      });
+
+      // 解析ボタン
+      analyzeBtn.addEventListener('click', analyzeReceipt);
+
+      // ページ非表示時にカメラを停止
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden && isStreaming) {
+          stopCamera();
+        } else if (!document.hidden && currentMode === 'camera' && !capturedImageData) {
+          startCamera();
+        }
+      });
+    }
+
+    // スキャンエリアのクリック処理
+    function handleScanAreaClick() {
+      if (currentMode === 'gallery' && !hasImage) {
+        galleryInput.click();
+      }
+    }
+
+    // ========== モード切り替え ==========
+    function switchToMode(mode) {
+      currentMode = mode;
+
+      if (mode === 'camera') {
+        cameraModeTab.classList.add('active');
+        galleryModeTab.classList.remove('active');
+        actionButtons.classList.add('hidden');
+        shutterSection.classList.add('visible');
+        scanArea.classList.add('camera-active');
+
+        // ギャラリープレビューを非表示
+        scanPreview.classList.remove('visible');
+
+        // カメラを開始
+        startCamera();
+      } else {
+        cameraModeTab.classList.remove('active');
+        galleryModeTab.classList.add('active');
+        actionButtons.classList.remove('hidden');
+        shutterSection.classList.remove('visible');
+        scanArea.classList.remove('camera-active');
+
+        // カメラを停止
+        stopCamera();
+
+        // カメラ関連UIを非表示
+        cameraVideo.classList.remove('visible');
+        capturePreview.classList.remove('visible');
+        cameraSwitchBtn.classList.remove('visible');
+        retakeBtn.classList.remove('visible');
+        cameraError.classList.remove('visible');
+
+        // キャプチャした画像があれば表示
+        if (capturedImageData) {
+          scanPreview.src = capturedImageData;
+          scanPreview.classList.add('visible');
+          scanContent.style.opacity = '0';
+        } else if (!hasImage) {
+          scanContent.style.opacity = '1';
+        }
+      }
+    }
+
+    // ========== カメラ機能 ==========
+    async function startCamera() {
+      if (!isCameraSupported()) {
+        showCameraError('カメラがサポートされていません', 'お使いのブラウザはカメラ機能をサポートしていません。ギャラリーから画像を選択してください。');
+        return;
+      }
+
+      // 既存のストリームを停止
+      stopCamera();
+
+      // キャプチャプレビューがある場合は表示しない
+      if (capturedImageData) {
+        capturePreview.src = capturedImageData;
+        capturePreview.classList.add('visible');
+        retakeBtn.classList.add('visible');
+        return;
+      }
+
+      try {
+        const constraints = {
+          video: {
+            facingMode: currentFacingMode,
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          },
+          audio: false
+        };
+
+        currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+        cameraVideo.srcObject = currentStream;
+
+        // ビデオ再生開始を待つ
+        await new Promise((resolve) => {
+          cameraVideo.onloadedmetadata = () => {
+            cameraVideo.play().then(resolve).catch(resolve);
+          };
+        });
+
+        // UI更新
+        isStreaming = true;
+        cameraVideo.classList.add('visible');
+        scanContent.style.opacity = '0';
+        cameraError.classList.remove('visible');
+
+        // カメラが複数ある場合は切り替えボタンを表示
+        if (availableCameras.length > 1) {
+          cameraSwitchBtn.classList.add('visible');
+        }
+
+        // カメラ情報を再取得（初回は権限がないと空になるため）
+        if (availableCameras.length === 0) {
+          await checkCameraAvailability();
+          if (availableCameras.length > 1) {
+            cameraSwitchBtn.classList.add('visible');
+          }
+        }
+
+      } catch (error) {
+        console.error('カメラ起動エラー:', error);
+        handleCameraError(error);
+      }
+    }
+
+    function stopCamera() {
+      if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+        currentStream = null;
+      }
+      cameraVideo.srcObject = null;
+      isStreaming = false;
+    }
+
+    // カメラエラーハンドリング
+    function handleCameraError(error) {
+      let title = 'カメラにアクセスできません';
+      let message = 'カメラへのアクセスに問題が発生しました。';
+
+      switch (error.name) {
+        case 'NotAllowedError':
+        case 'PermissionDeniedError':
+          title = 'カメラへのアクセスが拒否されました';
+          message = 'カメラを使用するには、ブラウザの設定からカメラへのアクセスを許可してください。';
+          break;
+        case 'NotFoundError':
+        case 'DevicesNotFoundError':
+          title = 'カメラが見つかりません';
+          message = 'お使いのデバイスにカメラが接続されていないか、使用できません。';
+          break;
+        case 'NotReadableError':
+        case 'TrackStartError':
+          title = 'カメラにアクセスできません';
+          message = 'カメラが他のアプリケーションで使用されている可能性があります。';
+          break;
+        case 'OverconstrainedError':
+          title = 'カメラの設定エラー';
+          message = '指定されたカメラ設定がサポートされていません。';
+          break;
+        case 'SecurityError':
+          title = 'セキュリティエラー';
+          message = 'HTTPS接続が必要です。安全な接続でアクセスしてください。';
+          break;
+      }
+
+      showCameraError(title, message);
+    }
+
+    function showCameraError(title, message) {
+      cameraErrorTitle.textContent = title;
+      cameraErrorMessage.textContent = message;
+      cameraError.classList.add('visible');
+      cameraVideo.classList.remove('visible');
+      cameraSwitchBtn.classList.remove('visible');
+    }
+
+    // カメラ切り替え
+    async function switchCamera() {
+      currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+
+      // 切り替えアニメーション
+      cameraSwitchBtn.style.transform = 'rotate(180deg)';
+      setTimeout(() => {
+        cameraSwitchBtn.style.transform = '';
+      }, 300);
+
+      await startCamera();
+    }
+
+    // 撮影
+    function capturePhoto() {
+      if (!isStreaming) return;
+
+      // シャッターエフェクト
+      shutterEffect.classList.add('flash');
+      setTimeout(() => shutterEffect.classList.remove('flash'), 200);
+
+      // キャンバスに描画
+      const ctx = captureCanvas.getContext('2d');
+      captureCanvas.width = cameraVideo.videoWidth;
+      captureCanvas.height = cameraVideo.videoHeight;
+      ctx.drawImage(cameraVideo, 0, 0);
+
+      // 画像データを取得
+      capturedImageData = captureCanvas.toDataURL('image/jpeg', 0.9);
+
+      // カメラを停止
+      stopCamera();
+
+      // プレビューを表示
+      capturePreview.src = capturedImageData;
+      capturePreview.classList.add('visible');
+      cameraVideo.classList.remove('visible');
+      cameraSwitchBtn.classList.remove('visible');
+      retakeBtn.classList.add('visible');
+
+      // 解析ボタンを有効化
+      hasImage = true;
+      analyzeBtn.disabled = false;
+
+      // 結果をリセット
+      resultSection.classList.remove('visible');
+      resultCard.classList.remove('animate');
+    }
+
+    // 撮り直し
+    function retakePhoto() {
+      capturedImageData = null;
+      hasImage = false;
+      analyzeBtn.disabled = true;
+
+      // プレビューを非表示
+      capturePreview.classList.remove('visible');
+      retakeBtn.classList.remove('visible');
+
+      // カメラを再開
+      startCamera();
+    }
+
+    // ========== ファイル選択 ==========
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          // キャプチャデータをクリア
+          capturedImageData = null;
+          capturePreview.classList.remove('visible');
+
+          // プレビューを表示
+          scanPreview.src = e.target.result;
+          scanPreview.classList.add('visible');
+          scanContent.style.opacity = '0';
+          hasImage = true;
+          analyzeBtn.disabled = false;
+
+          // ギャラリーモードに切り替え
+          if (currentMode === 'camera') {
+            switchToMode('gallery');
+          }
+
+          // 結果をリセット
+          resultSection.classList.remove('visible');
+          resultCard.classList.remove('animate');
+        };
+        reader.readAsDataURL(file);
+      }
+      // inputをリセット（同じファイルを再選択できるように）
+      event.target.value = '';
+    }
+
+    // ========== 解析処理 ==========
+    async function analyzeReceipt() {
+      if (!hasImage) return;
+
+      // ローディング表示
+      loadingOverlay.classList.add('visible');
+
+      // スキャンライン開始
+      scanLine.classList.add('scanning');
+
+      // ダミーの解析処理（2秒待機）
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // スキャンライン停止
+      scanLine.classList.remove('scanning');
+
+      // ローディング非表示
+      loadingOverlay.classList.remove('visible');
+
+      // 結果を表示
+      displayResults(dummyReceipt);
+    }
+
+    // 結果表示関数
+    function displayResults(data) {
+      // データをセット
+      storeName.textContent = data.storeName;
+      receiptDate.textContent = data.date;
+      totalAmount.textContent = data.total;
+
+      // 明細をクリア
+      resultItems.innerHTML = '';
+
+      // 明細を追加
+      data.items.forEach((item, index) => {
+        const li = document.createElement('li');
+        li.className = 'result-item';
+        li.innerHTML = `
+          <span class="item-name">${item.name}</span>
+          <span class="item-price">¥${item.price}</span>
+        `;
+        resultItems.appendChild(li);
+      });
+
+      // セクションを表示
+      resultSection.classList.add('visible');
+
+      // カードアニメーション
+      requestAnimationFrame(() => {
+        resultCard.classList.add('animate');
+
+        // 明細アニメーション（順次）
+        const items = resultItems.querySelectorAll('.result-item');
+        items.forEach((item, index) => {
+          setTimeout(() => {
+            item.classList.add('animate');
+          }, 600 + (index * 100));
+        });
+      });
+
+      // 結果セクションにスクロール
+      setTimeout(() => {
+        resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
+    }
+
+    // ========== 初期化実行 ==========
+    init();
+
+    // ========== Service Worker 登録 ==========
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((registration) => {
+            console.log('Service Worker registered:', registration.scope);
+          })
+          .catch((error) => {
+            console.log('Service Worker registration failed:', error);
+          });
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Claude
+.claude/
+
+# Logs
+*.log
+
+# Test files
+test_*.txt

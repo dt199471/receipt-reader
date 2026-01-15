@@ -456,8 +456,34 @@
       max-width: 280px;
     }
 
-    .camera-error-fallback {
+    /* カメラエラー時のボタン群 */
+    .camera-error-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
       margin-top: 1rem;
+      width: 100%;
+      max-width: 200px;
+    }
+
+    .camera-error-retry {
+      padding: 0.75rem 1.5rem;
+      background: var(--shu);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      touch-action: manipulation;
+    }
+
+    .camera-error-retry:hover {
+      background: var(--shu-dark);
+    }
+
+    .camera-error-fallback {
       padding: 0.75rem 1.5rem;
       background: var(--ai);
       color: white;
@@ -629,19 +655,71 @@
       height: 24px;
     }
 
-    /* ========== シャッターボタン（カメラモード用） ========== */
-    .shutter-section {
+    /* ========== 撮影モードセクション（カメラモード用） ========== */
+    .capture-mode-section {
       display: none;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
+      gap: 1.25rem;
       margin: 1.5rem 0 0.5rem;
-      gap: 2rem;
       opacity: 0;
       animation: fadeSlideUp 0.4s ease-out forwards;
     }
 
-    .shutter-section.visible {
+    .capture-mode-section.visible {
       display: flex;
+    }
+
+    .capture-mode-buttons {
+      display: flex;
+      gap: 0.75rem;
+      background: rgba(245, 241, 235, 0.9);
+      padding: 0.375rem;
+      border-radius: 999px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .capture-mode-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1rem;
+      border-radius: 999px;
+      border: none;
+      background: transparent;
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 0.85rem;
+      color: var(--sumi-light);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .capture-mode-btn.active {
+      background: var(--shu);
+      color: white;
+      box-shadow: 0 2px 8px var(--shu-glow);
+    }
+
+    .capture-mode-btn svg {
+      flex-shrink: 0;
+    }
+
+    .frame-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.25rem;
+      height: 1.25rem;
+      padding: 0 0.35rem;
+      border-radius: 999px;
+      background: var(--kage);
+      color: var(--kinari);
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .capture-mode-btn.active .frame-count {
+      background: rgba(255,255,255,0.3);
     }
 
     .shutter-btn {
@@ -678,76 +756,6 @@
 
     .shutter-btn:active::before {
       opacity: 0.3;
-    }
-
-    /* 連続スキャンコントロール */
-    .continuous-scan-controls {
-      display: none;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 1.25rem;
-      font-size: 0.8rem;
-      color: var(--sumi-light);
-    }
-
-    .continuous-scan-controls.visible {
-      display: flex;
-    }
-
-    .continuous-toggle-btn {
-      padding: 0.5rem 0.9rem;
-      border-radius: 999px;
-      border: 1px dashed var(--kage-deep);
-      background: rgba(245, 241, 235, 0.7);
-      font-family: 'Zen Kaku Gothic New', sans-serif;
-      font-size: 0.8rem;
-      color: var(--sumi-light);
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .continuous-toggle-btn:hover {
-      background: var(--washi);
-      color: var(--ai);
-      border-color: var(--ai);
-    }
-
-    .continuous-toggle-btn.active {
-      background: rgba(61, 90, 110, 0.1);
-      color: var(--ai);
-      border-color: var(--ai);
-    }
-
-    .continuous-indicator {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-
-    .continuous-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--kage-deep);
-    }
-
-    .continuous-dot.active {
-      background: var(--shu);
-      box-shadow: 0 0 0 4px rgba(201, 74, 74, 0.18);
-      animation: pulse-dot 1.4s ease-in-out infinite;
-    }
-
-    @keyframes pulse-dot {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.2); opacity: 0.7; }
-    }
-
-    .continuous-count {
-      font-variant-numeric: tabular-nums;
     }
 
     /* 解析ボタン */
@@ -1109,6 +1117,84 @@
       letter-spacing: 0.1em;
     }
 
+    /* プログレスバー（連続スキャン解析進捗用） */
+    .progress-bar-container {
+      width: 80%;
+      max-width: 280px;
+      height: 6px;
+      background: rgba(45, 45, 45, 0.15);
+      border-radius: 3px;
+      margin-top: 16px;
+      display: none;
+      overflow: hidden;
+    }
+
+    .progress-bar-container.visible {
+      display: block;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: var(--shu);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+      width: 0%;
+    }
+
+    /* 解析チェックリスト（各フレームの状況表示） */
+    .analysis-checklist {
+      margin-top: 12px;
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: var(--sumi-light);
+    }
+
+    .analysis-checklist.visible {
+      display: flex;
+    }
+
+    .analysis-checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0.5;
+      transition: opacity 0.3s ease;
+    }
+
+    .analysis-checklist-item.processing {
+      opacity: 1;
+    }
+
+    .analysis-checklist-item.completed {
+      opacity: 1;
+      color: var(--sumi);
+    }
+
+    .analysis-checklist-item .check-icon {
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .analysis-checklist-item .check-icon svg {
+      width: 14px;
+      height: 14px;
+      color: var(--shu);
+    }
+
+    .analysis-checklist-item .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--kage);
+      border-top-color: var(--shu);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
     /* ========== HTTPS警告 ========== */
     .https-warning {
       display: none;
@@ -1263,7 +1349,11 @@
           </svg>
           <h3 class="camera-error-title" id="cameraErrorTitle">カメラにアクセスできません</h3>
           <p class="camera-error-message" id="cameraErrorMessage">カメラへのアクセスが拒否されました。設定からカメラへのアクセスを許可してください。</p>
-          <button class="camera-error-fallback" id="cameraErrorFallback">ギャラリーから選択</button>
+          <!-- カメラ操作ボタン群 -->
+          <div class="camera-error-buttons">
+            <button class="camera-error-retry" id="cameraErrorRetry">再試行</button>
+            <button class="camera-error-fallback" id="cameraErrorFallback">ギャラリーから選択</button>
+          </div>
         </div>
 
         <!-- スキャンライン -->
@@ -1290,20 +1380,29 @@
       </button>
     </div>
 
-    <!-- シャッターボタン（カメラモード用） -->
-    <div class="shutter-section" id="shutterSection">
-      <button class="shutter-btn" id="shutterBtn" aria-label="シャッター"></button>
-    </div>
-
-    <!-- 連続スキャンコントロール（カメラモード用） -->
-    <div class="continuous-scan-controls" id="continuousControls">
-      <button class="continuous-toggle-btn" id="continuousToggleBtn" type="button">
-        <span>まとめ撮りモード</span>
-      </button>
-      <div class="continuous-indicator">
-        <span class="continuous-dot" id="continuousDot"></span>
-        <span class="continuous-count" id="continuousCount">0枚</span>
+    <!-- 撮影モード選択（横並び） -->
+    <div class="capture-mode-section" id="captureModeSection">
+      <div class="capture-mode-buttons">
+        <button class="capture-mode-btn active" id="singleModeBtn" data-mode="single">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <span>1枚撮影</span>
+        </button>
+        <button class="capture-mode-btn" id="continuousModeBtn" data-mode="continuous">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="4" width="14" height="14" rx="2"/>
+            <rect x="6" y="2" width="14" height="14" rx="2"/>
+            <rect x="10" y="6" width="14" height="14" rx="2"/>
+          </svg>
+          <span>まとめ撮り</span>
+          <span class="frame-count" id="frameCount">0</span>
+        </button>
       </div>
+
+      <!-- シャッターボタン -->
+      <button class="shutter-btn" id="shutterBtn" aria-label="シャッター"></button>
     </div>
 
     <!-- 解析ボタン -->
@@ -1358,10 +1457,16 @@
     <input type="file" class="hidden-input" id="galleryInput" accept="image/*">
   </div>
 
-  <!-- ローディングオーバーレイ -->
+  <!-- ローディングオーバーレイ（解析中表示） -->
   <div class="loading-overlay" id="loadingOverlay">
     <div class="loading-circle"></div>
     <p class="loading-text">解析中...</p>
+    <!-- プログレスバー（連続スキャン時の進捗表示） -->
+    <div class="progress-bar-container" id="progressBarContainer">
+      <div class="progress-bar" id="analysisProgressBar"></div>
+    </div>
+    <!-- 完了チェックリスト（各フレーム解析状況） -->
+    <div class="analysis-checklist" id="analysisChecklist"></div>
   </div>
 
   <script>
@@ -1395,6 +1500,7 @@
     const cameraError = document.getElementById('cameraError');
     const cameraErrorTitle = document.getElementById('cameraErrorTitle');
     const cameraErrorMessage = document.getElementById('cameraErrorMessage');
+    const cameraErrorRetry = document.getElementById('cameraErrorRetry');
     const cameraErrorFallback = document.getElementById('cameraErrorFallback');
     const httpsWarning = document.getElementById('httpsWarning');
 
@@ -1402,12 +1508,11 @@
     const cameraModeTab = document.getElementById('cameraModeTab');
     const galleryModeTab = document.getElementById('galleryModeTab');
     const actionButtons = document.getElementById('actionButtons');
-    const shutterSection = document.getElementById('shutterSection');
+    const captureModeSection = document.getElementById('captureModeSection');
+    const singleModeBtn = document.getElementById('singleModeBtn');
+    const continuousModeBtn = document.getElementById('continuousModeBtn');
+    const frameCount = document.getElementById('frameCount');
     const shutterBtn = document.getElementById('shutterBtn');
-    const continuousControls = document.getElementById('continuousControls');
-    const continuousToggleBtn = document.getElementById('continuousToggleBtn');
-    const continuousDot = document.getElementById('continuousDot');
-    const continuousCount = document.getElementById('continuousCount');
 
     // ========== 状態管理 ==========
     let hasImage = false;
@@ -1514,6 +1619,14 @@
       shutterBtn.addEventListener('click', capturePhoto);
       cameraSwitchBtn.addEventListener('click', switchCamera);
       retakeBtn.addEventListener('click', retakePhoto);
+
+      // カメラエラー時の再試行ボタン
+      cameraErrorRetry.addEventListener('click', () => {
+        cameraError.classList.remove('visible');
+        startCamera();
+      });
+
+      // カメラエラー時のギャラリー選択ボタン
       cameraErrorFallback.addEventListener('click', () => {
         switchToMode('gallery');
         galleryInput.click();
@@ -1522,8 +1635,9 @@
       // 解析ボタン
       analyzeBtn.addEventListener('click', analyzeReceipt);
 
-      // 連続スキャン切り替え
-      continuousToggleBtn.addEventListener('click', toggleContinuousMode);
+      // 撮影モード切り替え
+      singleModeBtn.addEventListener('click', () => selectCaptureMode('single'));
+      continuousModeBtn.addEventListener('click', () => selectCaptureMode('continuous'));
 
       // ページ非表示時にカメラを停止
       document.addEventListener('visibilitychange', () => {
@@ -1550,8 +1664,7 @@
         cameraModeTab.classList.add('active');
         galleryModeTab.classList.remove('active');
         actionButtons.classList.add('hidden');
-        shutterSection.classList.add('visible');
-        continuousControls.classList.add('visible');
+        captureModeSection.classList.add('visible');
         scanArea.classList.add('camera-active');
 
         // ギャラリープレビューを非表示
@@ -1563,8 +1676,7 @@
         cameraModeTab.classList.remove('active');
         galleryModeTab.classList.add('active');
         actionButtons.classList.remove('hidden');
-        shutterSection.classList.remove('visible');
-        continuousControls.classList.remove('visible');
+        captureModeSection.classList.remove('visible');
         if (isContinuousRunning) {
           stopContinuousCapture();
         }
@@ -1623,10 +1735,31 @@
         cameraVideo.srcObject = currentStream;
 
         // ビデオ再生開始を待つ
-        await new Promise((resolve) => {
+        await new Promise((resolve, reject) => {
           cameraVideo.onloadedmetadata = () => {
-            cameraVideo.play().then(resolve).catch(resolve);
+            cameraVideo.play()
+              .then(resolve)
+              .catch((playError) => {
+                console.error('ビデオ再生エラー:', playError);
+                // play()失敗時はユーザーフレンドリーなエラーを表示
+                showCameraError(
+                  'カメラ映像を表示できません',
+                  '映像の再生に失敗しました。再試行するか、ギャラリーから画像を選択してください。'
+                );
+                reject(playError);
+              });
           };
+
+          // メタデータ読み込みタイムアウト（5秒）
+          setTimeout(() => {
+            if (!isStreaming) {
+              showCameraError(
+                'カメラの読み込みがタイムアウトしました',
+                'カメラの応答がありません。再試行するか、ギャラリーから画像を選択してください。'
+              );
+              reject(new Error('Camera metadata load timeout'));
+            }
+          }, 5000);
         });
 
         // UI更新
@@ -1768,17 +1901,20 @@
       startCamera();
     }
 
-    // ========== 連続スキャン ==========
-    function toggleContinuousMode() {
-      isContinuousMode = !isContinuousMode;
-
-      continuousToggleBtn.classList.toggle('active', isContinuousMode);
-
-      if (isContinuousMode) {
-        // 撮影モードを連続に切り替え
-        startContinuousCapture();
-      } else {
+    // ========== 撮影モード選択 ==========
+    function selectCaptureMode(mode) {
+      if (mode === 'single') {
+        // 1枚撮影モードに切り替え
+        isContinuousMode = false;
+        singleModeBtn.classList.add('active');
+        continuousModeBtn.classList.remove('active');
         stopContinuousCapture();
+      } else if (mode === 'continuous') {
+        // まとめ撮りモードに切り替え
+        isContinuousMode = true;
+        singleModeBtn.classList.remove('active');
+        continuousModeBtn.classList.add('active');
+        startContinuousCapture();
       }
     }
 
@@ -1789,7 +1925,6 @@
       continuousFrames = [];
       updateContinuousCount();
       isContinuousRunning = true;
-      continuousDot.classList.add('active');
 
       // カメラが止まっていたら再開
       if (!isStreaming && !capturedImageData) {
@@ -1805,8 +1940,9 @@
 
       const tempCanvas = document.createElement('canvas');
       const tempCtx = tempCanvas.getContext('2d');
-      const TARGET_WIDTH = 320;
-      const TARGET_HEIGHT = 240;
+      // 読み取り精度向上のため解像度を上げる
+      const TARGET_WIDTH = 640;
+      const TARGET_HEIGHT = 480;
 
       continuousIntervalId = setInterval(() => {
         if (!isStreaming || cameraVideo.videoWidth === 0) return;
@@ -1827,11 +1963,12 @@
           diffScore = computeFrameDifference(lastSample, current);
         }
 
-        const DIFF_THRESHOLD = 0.12; // 差分しきい値（小さいほど厳しくなる）
+        // 差分しきい値を緩和（より多くのフレームを保存して精度向上）
+        const DIFF_THRESHOLD = 0.05;
 
         if (!lastSample || diffScore > DIFF_THRESHOLD) {
-          // キーフレームとして保存（フル品質ではなく軽量化）
-          const fullDataUrl = tempCanvas.toDataURL('image/jpeg', 0.4);
+          // キーフレームとして保存（読み取り精度向上のため高品質に）
+          const fullDataUrl = tempCanvas.toDataURL('image/jpeg', 0.8);
 
           // さらに小さいサムネイル（将来UIに使うかもしれないので保持）
           const thumbCanvas = document.createElement('canvas');
@@ -1841,12 +1978,16 @@
           thumbCanvas.width = THUMB_W;
           thumbCanvas.height = THUMB_H;
           thumbCtx.drawImage(tempCanvas, 0, 0, THUMB_W, THUMB_H);
-          const thumbUrl = thumbCanvas.toDataURL('image/jpeg', 0.4);
+          const thumbUrl = thumbCanvas.toDataURL('image/jpeg', 0.8);
+
+          // シャープネス（鮮明度）スコアを計算してベストショット選択に使用
+          const sharpness = computeSharpnessScore(current);
 
           continuousFrames.push({
             dataUrl: fullDataUrl,
             thumbUrl,
             score: diffScore,
+            sharpness, // 鮮明度スコア（高いほど鮮明）
           });
 
           // 最大枚数制限（API料金対策）
@@ -1863,7 +2004,6 @@
 
     function stopContinuousCapture() {
       isContinuousRunning = false;
-      continuousDot.classList.remove('active');
 
       if (continuousIntervalId) {
         clearInterval(continuousIntervalId);
@@ -1901,9 +2041,54 @@
       return diffSum / total;
     }
 
+    // シャープネス（鮮明度）スコアを計算
+    // Laplacian variance を簡易計算（エッジ強度の分散が高いほど鮮明）
+    function computeSharpnessScore(imageData) {
+      const data = imageData.data;
+      const w = imageData.w;
+      const h = imageData.h;
+      const step = 4; // サンプリング間隔（計算負荷軽減のため）
+
+      let laplacianSum = 0;
+      let laplacianSqSum = 0;
+      let count = 0;
+
+      // グレースケール変換しながらLaplacianカーネル適用
+      for (let y = step; y < h - step; y += step) {
+        for (let x = step; x < w - step; x += step) {
+          // 中心ピクセルと周囲のグレースケール値を取得
+          const getGray = (px, py) => {
+            const idx = (py * w + px) * 4;
+            return 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+          };
+
+          const center = getGray(x, y);
+          const top = getGray(x, y - 1);
+          const bottom = getGray(x, y + 1);
+          const left = getGray(x - 1, y);
+          const right = getGray(x + 1, y);
+
+          // Laplacianフィルタ: 中心*4 - 上下左右の合計
+          const laplacian = Math.abs(4 * center - top - bottom - left - right);
+
+          laplacianSum += laplacian;
+          laplacianSqSum += laplacian * laplacian;
+          count++;
+        }
+      }
+
+      if (count === 0) return 0;
+
+      // 分散を計算（高いほど鮮明）
+      const mean = laplacianSum / count;
+      const variance = (laplacianSqSum / count) - (mean * mean);
+
+      return variance;
+    }
+
     function updateContinuousCount() {
       const count = continuousFrames.length;
-      continuousCount.textContent = `${count}枚`;
+      frameCount.textContent = count;
     }
 
     // ========== ファイル選択 ==========
@@ -1993,25 +2178,85 @@
       // スキャンライン開始
       scanLine.classList.add('scanning');
 
+      // プログレスバー・チェックリスト要素を取得
+      const progressBarContainer = document.getElementById('progressBarContainer');
+      const progressBar = document.getElementById('analysisProgressBar');
+      const checklist = document.getElementById('analysisChecklist');
+
       try {
         // 連続スキャンモードの場合は、溜めたフレームを順に解析
         if (isContinuousMode && continuousFrames.length > 0) {
           console.log('連続スキャンモードで解析開始。フレーム数:', continuousFrames.length);
+
+          // ベストショット選択: シャープネス（鮮明度）スコアで降順ソート
+          // 最も鮮明なフレームから優先的に解析
+          const sortedFrames = [...continuousFrames].sort((a, b) => {
+            return (b.sharpness || 0) - (a.sharpness || 0);
+          });
+          console.log('シャープネスでソート済み:', sortedFrames.map(f => f.sharpness));
+
           const results = [];
+          const frameCount = sortedFrames.length;
+
+          // プログレスバーとチェックリストを初期化・表示
+          progressBarContainer.classList.add('visible');
+          progressBar.style.width = '0%';
+          checklist.classList.add('visible');
+          checklist.innerHTML = '';
+
+          // チェックリスト項目を生成
+          for (let j = 0; j < frameCount; j++) {
+            const item = document.createElement('div');
+            item.className = 'analysis-checklist-item';
+            item.id = `checklist-item-${j}`;
+            item.innerHTML = `
+              <div class="check-icon">
+                <div class="spinner"></div>
+              </div>
+              <span>フレーム ${j + 1}</span>
+            `;
+            checklist.appendChild(item);
+          }
 
           // フレームごとに順次解析（API料金を抑えるため同時ではなく直列）
-          for (let i = 0; i < continuousFrames.length; i++) {
-            const frame = continuousFrames[i];
-            loadingText.textContent = `レシートを解析中... (${i + 1}/${continuousFrames.length})`;
-            console.log(`フレーム${i + 1}解析開始 - 画像サイズ:`, frame.dataUrl.length, '文字');
+          // ソート済みフレームを使用（鮮明度の高い順）
+          for (let i = 0; i < frameCount; i++) {
+            const frame = sortedFrames[i];
+            loadingText.textContent = `レシートを解析中... (${i + 1}/${frameCount}) [鮮明度: ${Math.round(frame.sharpness || 0)}]`;
+            console.log(`フレーム${i + 1}解析開始 - 画像サイズ:`, frame.dataUrl.length, '文字, シャープネス:', frame.sharpness);
+
+            // 現在処理中のチェックリスト項目をハイライト
+            const currentItem = document.getElementById(`checklist-item-${i}`);
+            if (currentItem) {
+              currentItem.classList.add('processing');
+            }
 
             const receiptData = await callOpenAiReceiptOcr(frame.dataUrl, (msg) => {
-              loadingText.textContent = `${msg} (${i + 1}/${continuousFrames.length})`;
+              loadingText.textContent = `${msg} (${i + 1}/${frameCount})`;
             });
             results.push(receiptData);
+
+            // 完了したらチェックマークに変更
+            if (currentItem) {
+              currentItem.classList.remove('processing');
+              currentItem.classList.add('completed');
+              currentItem.querySelector('.check-icon').innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              `;
+            }
+
+            // プログレスバーを更新
+            const progress = ((i + 1) / frameCount) * 100;
+            progressBar.style.width = `${progress}%`;
           }
 
           console.log('連続スキャン解析完了:', results);
+
+          // プログレスバーとチェックリストを非表示にリセット
+          progressBarContainer.classList.remove('visible');
+          checklist.classList.remove('visible');
 
           // 最後の結果を画面に表示（UIは1枚分を引き継ぎつつ、中身は配列で保持）
           const last = results[results.length - 1];
@@ -2021,10 +2266,11 @@
           };
           displayResults(last);
 
-          // 連続キャプチャは一旦停止
+          // 連続キャプチャは一旦停止し、1枚撮影モードに戻す
           stopContinuousCapture();
           isContinuousMode = false;
-          continuousToggleBtn.classList.remove('active');
+          singleModeBtn.classList.add('active');
+          continuousModeBtn.classList.remove('active');
 
           // 連続フレームはクリア（料金対策）
           continuousFrames = [];

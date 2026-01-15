@@ -1855,6 +1855,13 @@
     function capturePhoto() {
       if (!isStreaming) return;
 
+      // まとめ撮りモードの場合
+      if (isContinuousMode) {
+        startContinuousCapture();
+        return;
+      }
+
+      // 1枚撮影モードの場合
       // シャッターエフェクト
       shutterEffect.classList.add('flash');
       setTimeout(() => shutterEffect.classList.remove('flash'), 200);
@@ -1914,7 +1921,7 @@
         isContinuousMode = true;
         singleModeBtn.classList.remove('active');
         continuousModeBtn.classList.add('active');
-        startContinuousCapture();
+        // 撮影ボタンを押すまで録画は開始しない
       }
     }
 

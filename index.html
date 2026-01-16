@@ -1544,6 +1544,9 @@
     let isContinuousRunning = false;
     let continuousIntervalId = null;
     let continuousFrames = []; // { dataUrl, thumbUrl, score }
+    let isAnalyzing = false; // 解析中フラグ（重複防止）
+    let receiptResults = []; // 複数のレシート解析結果を保存
+    let lastReceiptDetectionTime = 0; // 最後のレシート検出時刻
 
     // ========== カテゴリ定義 ==========
     const categories = [
@@ -1954,7 +1957,9 @@
       if (!isCameraSupported()) return;
 
       // 状態リセット
-      continuousFrames = [];
+      receiptResults = [];
+      isAnalyzing = false;
+      lastReceiptDetectionTime = 0;
       updateContinuousCount();
       isContinuousRunning = true;
 
@@ -1967,22 +1972,28 @@
         startCamera();
       }
 
-      // 1秒ごとにフレームをサンプリング
+      // 500msごとにフレームをチェック（レシート検出）
       if (continuousIntervalId) {
         clearInterval(continuousIntervalId);
       }
 
-      let lastSample = null; // { data: Uint8ClampedArray, w, h }
-
       const tempCanvas = document.createElement('canvas');
       const tempCtx = tempCanvas.getContext('2d');
-      // 読み取り精度向上のため解像度を上げる
+      // レシート検出用の解像度
       const TARGET_WIDTH = 640;
       const TARGET_HEIGHT = 480;
 
-      continuousIntervalId = setInterval(() => {
+      continuousIntervalId = setInterval(async () => {
         if (!isStreaming || cameraVideo.videoWidth === 0) return;
+        if (isAnalyzing) return; // 解析中は次の判定をスキップ
 
+        // 最後の検出から3秒以内はスキップ（同じレシートを複数回解析しない）
+        const now = Date.now();
+        if (now - lastReceiptDetectionTime < 3000) {
+          return;
+        }
+
+        // フレームをキャプチャ
         tempCanvas.width = TARGET_WIDTH;
         tempCanvas.height = TARGET_HEIGHT;
         tempCtx.drawImage(cameraVideo, 0, 0, TARGET_WIDTH, TARGET_HEIGHT);
@@ -1994,52 +2005,41 @@
           h: TARGET_HEIGHT,
         };
 
-        let diffScore = 1;
-        if (lastSample) {
-          diffScore = computeFrameDifference(lastSample, current);
-        }
+        // レシート判定
+        const isReceipt = detectReceipt(current);
 
-        // 差分しきい値を緩和（より多くのフレームを保存して精度向上）
-        const DIFF_THRESHOLD = 0.05;
+        if (isReceipt) {
+          console.log('レシートを検出！自動解析を開始します');
+          lastReceiptDetectionTime = now;
+          isAnalyzing = true;
 
-        if (!lastSample || diffScore > DIFF_THRESHOLD) {
-          // キーフレームとして保存（読み取り精度向上のため高品質に）
-          const fullDataUrl = tempCanvas.toDataURL('image/jpeg', 0.8);
+          // 高品質な画像を取得（解析用）
+          const fullCanvas = document.createElement('canvas');
+          const fullCtx = fullCanvas.getContext('2d');
+          fullCanvas.width = cameraVideo.videoWidth;
+          fullCanvas.height = cameraVideo.videoHeight;
+          fullCtx.drawImage(cameraVideo, 0, 0);
+          const fullDataUrl = fullCanvas.toDataURL('image/jpeg', 0.9);
 
-          // さらに小さいサムネイル（将来UIに使うかもしれないので保持）
-          const thumbCanvas = document.createElement('canvas');
-          const thumbCtx = thumbCanvas.getContext('2d');
-          const THUMB_W = 80;
-          const THUMB_H = 60;
-          thumbCanvas.width = THUMB_W;
-          thumbCanvas.height = THUMB_H;
-          thumbCtx.drawImage(tempCanvas, 0, 0, THUMB_W, THUMB_H);
-          const thumbUrl = thumbCanvas.toDataURL('image/jpeg', 0.8);
+          // シャッターエフェクト
+          shutterEffect.classList.add('flash');
+          setTimeout(() => shutterEffect.classList.remove('flash'), 200);
 
-          // シャープネス（鮮明度）スコアを計算してベストショット選択に使用
-          const sharpness = computeSharpnessScore(current);
-
-          continuousFrames.push({
-            dataUrl: fullDataUrl,
-            thumbUrl,
-            score: diffScore,
-            sharpness, // 鮮明度スコア（高いほど鮮明）
-          });
-
-          // 最大枚数制限（API料金対策）
-          const MAX_FRAMES = 8;
-          if (continuousFrames.length > MAX_FRAMES) {
-            continuousFrames.shift();
+          // 自動解析を実行
+          try {
+            await autoAnalyzeReceipt(fullDataUrl);
+          } catch (error) {
+            console.error('自動解析エラー:', error);
+          } finally {
+            isAnalyzing = false;
           }
-
-          updateContinuousCount();
-          lastSample = current;
         }
-      }, 1000); // 1秒ごと
+      }, 500); // 500msごとにチェック
     }
 
     function stopContinuousCapture() {
       isContinuousRunning = false;
+      isAnalyzing = false;
 
       if (continuousIntervalId) {
         clearInterval(continuousIntervalId);
@@ -2050,10 +2050,34 @@
       shutterBtn.classList.remove('recording');
       continuousModeText.textContent = 'まとめ撮り';
 
-      // フレームがある場合は解析ボタンを有効化
-      if (continuousFrames.length > 0) {
-        hasImage = true;
-        analyzeBtn.disabled = false;
+      console.log(`まとめ撮り停止。解析済みレシート数: ${receiptResults.length}`);
+    }
+
+    // 自動解析関数（レシート検出時に呼ばれる）
+    async function autoAnalyzeReceipt(imageDataUrl) {
+      try {
+        console.log('自動解析開始...');
+
+        // OCR解析を実行
+        const data = await callServerOCR(imageDataUrl);
+
+        // 解析結果を保存
+        receiptResults.push({
+          imageDataUrl,
+          data,
+          timestamp: Date.now()
+        });
+
+        // カウンターを更新
+        updateContinuousCount();
+
+        // 結果を表示
+        displayResults(data);
+
+        console.log(`解析完了！現在の解析済み数: ${receiptResults.length}`);
+      } catch (error) {
+        console.error('自動解析でエラーが発生:', error);
+        // エラーが発生してもまとめ撮りは継続
       }
     }
 
@@ -2133,8 +2157,127 @@
     }
 
     function updateContinuousCount() {
-      const count = continuousFrames.length;
+      const count = receiptResults.length;
       frameCount.textContent = count;
+    }
+
+    // レシート判定関数（シンプルな画像解析）
+    function detectReceipt(imageData) {
+      const data = imageData.data;
+      const w = imageData.w;
+      const h = imageData.h;
+
+      // 1. 明るさとコントラストのチェック
+      let brightnessSum = 0;
+      let pixelCount = 0;
+      const step = 8; // サンプリング間隔
+
+      for (let y = 0; y < h; y += step) {
+        for (let x = 0; x < w; x += step) {
+          const idx = (y * w + x) * 4;
+          const r = data[idx];
+          const g = data[idx + 1];
+          const b = data[idx + 2];
+          const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
+          brightnessSum += brightness;
+          pixelCount++;
+        }
+      }
+
+      const avgBrightness = brightnessSum / pixelCount;
+
+      // レシートは白い背景が多いので、平均明るさが一定以上
+      if (avgBrightness < 120) {
+        return false; // 暗すぎる
+      }
+
+      // 2. エッジ密度のチェック（テキストが多いか）
+      let edgeCount = 0;
+      const edgeStep = 8;
+      const edgeThreshold = 30; // エッジと判定する閾値
+
+      for (let y = edgeStep; y < h - edgeStep; y += edgeStep) {
+        for (let x = edgeStep; x < w - edgeStep; x += edgeStep) {
+          const idx = (y * w + x) * 4;
+
+          // 中心ピクセルの明度
+          const centerGray = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+
+          // 周囲ピクセルとの差分（簡易Sobelフィルタ）
+          const rightIdx = (y * w + (x + edgeStep)) * 4;
+          const bottomIdx = ((y + edgeStep) * w + x) * 4;
+
+          const rightGray = 0.299 * data[rightIdx] + 0.587 * data[rightIdx + 1] + 0.114 * data[rightIdx + 2];
+          const bottomGray = 0.299 * data[bottomIdx] + 0.587 * data[bottomIdx + 1] + 0.114 * data[bottomIdx + 2];
+
+          const gx = Math.abs(rightGray - centerGray);
+          const gy = Math.abs(bottomGray - centerGray);
+          const gradient = Math.sqrt(gx * gx + gy * gy);
+
+          if (gradient > edgeThreshold) {
+            edgeCount++;
+          }
+        }
+      }
+
+      const totalSamplePixels = ((h - 2 * edgeStep) / edgeStep) * ((w - 2 * edgeStep) / edgeStep);
+      const edgeDensity = edgeCount / totalSamplePixels;
+
+      // エッジ密度が一定以上（テキストが多い）
+      if (edgeDensity < 0.1) {
+        return false; // エッジが少なすぎる
+      }
+
+      // 3. 中央部分にコンテンツがあるかチェック
+      const centerX = Math.floor(w / 2);
+      const centerY = Math.floor(h / 2);
+      const centerSize = Math.min(w, h) / 4;
+
+      let centerEdgeCount = 0;
+      let centerPixelCount = 0;
+
+      for (let y = centerY - centerSize / 2; y < centerY + centerSize / 2; y += edgeStep) {
+        for (let x = centerX - centerSize / 2; x < centerX + centerSize / 2; x += edgeStep) {
+          if (y >= 0 && y < h && x >= 0 && x < w) {
+            const idx = (Math.floor(y) * w + Math.floor(x)) * 4;
+            const gray = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+
+            // 近隣との差分チェック
+            if (x + edgeStep < w && y + edgeStep < h) {
+              const rightIdx = (Math.floor(y) * w + Math.floor(x + edgeStep)) * 4;
+              const bottomIdx = (Math.floor(y + edgeStep) * w + Math.floor(x)) * 4;
+
+              const rightGray = 0.299 * data[rightIdx] + 0.587 * data[rightIdx + 1] + 0.114 * data[rightIdx + 2];
+              const bottomGray = 0.299 * data[bottomIdx] + 0.587 * data[bottomIdx + 1] + 0.114 * data[bottomIdx + 2];
+
+              const gx = Math.abs(rightGray - gray);
+              const gy = Math.abs(bottomGray - gray);
+              const gradient = Math.sqrt(gx * gx + gy * gy);
+
+              if (gradient > edgeThreshold) {
+                centerEdgeCount++;
+              }
+            }
+            centerPixelCount++;
+          }
+        }
+      }
+
+      const centerEdgeDensity = centerEdgeCount / centerPixelCount;
+
+      // 中央にもコンテンツがある
+      if (centerEdgeDensity < 0.08) {
+        return false;
+      }
+
+      console.log('レシート判定:', {
+        avgBrightness: avgBrightness.toFixed(1),
+        edgeDensity: edgeDensity.toFixed(3),
+        centerEdgeDensity: centerEdgeDensity.toFixed(3),
+        result: true
+      });
+
+      return true; // レシートと判定
     }
 
     // ========== ファイル選択 ==========
@@ -2217,6 +2360,12 @@
     async function analyzeReceipt() {
       if (!hasImage) return;
 
+      // まとめ撮りモードでは自動解析されるため、解析ボタンは使用しない
+      if (isContinuousMode) {
+        console.log('まとめ撮りモードでは自動解析されます');
+        return;
+      }
+
       // ローディング表示
       loadingOverlay.classList.add('visible');
       const loadingText = loadingOverlay.querySelector('.loading-text');
@@ -2230,8 +2379,8 @@
       const checklist = document.getElementById('analysisChecklist');
 
       try {
-        // 連続スキャンモードの場合は、溜めたフレームを順に解析
-        if (isContinuousMode && continuousFrames.length > 0) {
+        // まとめ撮りモードでは自動解析されるため、この分岐は不要
+        if (false && isContinuousMode && continuousFrames.length > 0) {
           console.log('連続スキャンモードで解析開始。フレーム数:', continuousFrames.length);
 
           // ベストショット選択: シャープネス（鮮明度）スコアで降順ソート

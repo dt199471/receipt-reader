@@ -722,17 +722,6 @@
       background: rgba(255,255,255,0.3);
     }
 
-    /* 録画中のまとめ撮りボタン */
-    .capture-mode-btn.recording {
-      background: var(--shu);
-      color: white;
-      animation: pulse-recording 1.5s ease-in-out infinite;
-    }
-
-    .capture-mode-btn.recording .frame-count {
-      background: rgba(255,255,255,0.4);
-    }
-
     @keyframes pulse-recording {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.7; }
@@ -772,6 +761,16 @@
 
     .shutter-btn:active::before {
       opacity: 0.3;
+    }
+
+    /* 録画中のシャッターボタン（四角いデザイン） */
+    .shutter-btn.recording {
+      border-radius: 12px;
+      animation: pulse-recording 1.5s ease-in-out infinite;
+    }
+
+    .shutter-btn.recording::before {
+      border-radius: 4px;
     }
 
     /* 解析ボタン */
@@ -1654,14 +1653,7 @@
 
       // 撮影モード切り替え
       singleModeBtn.addEventListener('click', () => selectCaptureMode('single'));
-      continuousModeBtn.addEventListener('click', () => {
-        // 録画中の場合は停止
-        if (isContinuousRunning) {
-          stopContinuousCapture();
-        } else {
-          selectCaptureMode('continuous');
-        }
-      });
+      continuousModeBtn.addEventListener('click', () => selectCaptureMode('continuous'));
 
       // ページ非表示時にカメラを停止
       document.addEventListener('visibilitychange', () => {
@@ -1881,7 +1873,13 @@
 
       // まとめ撮りモードの場合
       if (isContinuousMode) {
-        startContinuousCapture();
+        // 録画中の場合は停止
+        if (isContinuousRunning) {
+          stopContinuousCapture();
+        } else {
+          // 録画開始
+          startContinuousCapture();
+        }
         return;
       }
 
@@ -1934,6 +1932,9 @@
 
     // ========== 撮影モード選択 ==========
     function selectCaptureMode(mode) {
+      // 録画中はモード切り替え不可
+      if (isContinuousRunning) return;
+
       if (mode === 'single') {
         // 1枚撮影モードに切り替え
         isContinuousMode = false;
@@ -1958,8 +1959,8 @@
       isContinuousRunning = true;
 
       // UIを録画中に変更
-      continuousModeBtn.classList.add('recording');
-      continuousModeText.textContent = '停止 ●';
+      shutterBtn.classList.add('recording');
+      continuousModeText.textContent = '撮影中';
 
       // カメラが止まっていたら再開
       if (!isStreaming && !capturedImageData) {
@@ -2046,7 +2047,7 @@
       }
 
       // UIを元に戻す
-      continuousModeBtn.classList.remove('recording');
+      shutterBtn.classList.remove('recording');
       continuousModeText.textContent = 'まとめ撮り';
 
       // フレームがある場合は解析ボタンを有効化

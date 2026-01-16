@@ -1559,6 +1559,120 @@
       { id: 'other', name: 'その他', icon: '📝', class: 'category-other' }
     ];
 
+    // ========== LocalStorage管理クラス ==========
+    class ReceiptStorage {
+      constructor() {
+        this.storageKey = 'receipts';
+        this.settingsKey = 'settings';
+        this.maxReceipts = 100; // 最大保存件数
+      }
+
+      // すべてのレシートを取得
+      getAll() {
+        try {
+          const data = localStorage.getItem(this.storageKey);
+          return data ? JSON.parse(data) : [];
+        } catch (error) {
+          console.error('LocalStorage読み込みエラー:', error);
+          return [];
+        }
+      }
+
+      // レシートを保存
+      save(receipt) {
+        try {
+          const receipts = this.getAll();
+
+          // IDがない場合は生成
+          if (!receipt.id) {
+            receipt.id = 'receipt_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+          }
+
+          // タイムスタンプがない場合は追加
+          if (!receipt.timestamp) {
+            receipt.timestamp = Date.now();
+          }
+
+          if (!receipt.createdAt) {
+            receipt.createdAt = new Date().toISOString();
+          }
+
+          receipts.push(receipt);
+
+          // 最大件数を超えたら古いものを削除
+          if (receipts.length > this.maxReceipts) {
+            receipts.sort((a, b) => a.timestamp - b.timestamp);
+            receipts.splice(0, receipts.length - this.maxReceipts);
+          }
+
+          localStorage.setItem(this.storageKey, JSON.stringify(receipts));
+          console.log('レシートを保存しました:', receipt.id);
+          return receipt.id;
+        } catch (error) {
+          console.error('LocalStorage保存エラー:', error);
+          if (error.name === 'QuotaExceededError') {
+            // 容量超過の場合、古いデータを削除してリトライ
+            this.cleanupOldData();
+            return this.save(receipt);
+          }
+          throw error;
+        }
+      }
+
+      // 指定日付のレシートを取得
+      getByDate(dateString) {
+        const receipts = this.getAll();
+        return receipts.filter(r => r.date === dateString);
+      }
+
+      // 指定月のレシートを取得
+      getByMonth(year, month) {
+        const receipts = this.getAll();
+        const targetMonth = `${year}-${String(month).padStart(2, '0')}`;
+        return receipts.filter(r => r.date && r.date.startsWith(targetMonth));
+      }
+
+      // IDでレシートを取得
+      getById(id) {
+        const receipts = this.getAll();
+        return receipts.find(r => r.id === id);
+      }
+
+      // レシートを削除
+      delete(id) {
+        try {
+          const receipts = this.getAll();
+          const filtered = receipts.filter(r => r.id !== id);
+          localStorage.setItem(this.storageKey, JSON.stringify(filtered));
+          console.log('レシートを削除しました:', id);
+          return true;
+        } catch (error) {
+          console.error('削除エラー:', error);
+          return false;
+        }
+      }
+
+      // 古いデータをクリーンアップ
+      cleanupOldData() {
+        const receipts = this.getAll();
+        if (receipts.length > 50) {
+          receipts.sort((a, b) => a.timestamp - b.timestamp);
+          const keep = receipts.slice(-50);
+          localStorage.setItem(this.storageKey, JSON.stringify(keep));
+          console.log('古いデータを削除しました');
+        }
+      }
+
+      // 全データをクリア
+      clearAll() {
+        localStorage.removeItem(this.storageKey);
+        console.log('全データをクリアしました');
+      }
+    }
+
+    // ストレージインスタンスを作成
+    const storage = new ReceiptStorage();
+
     // ========== 初期化 ==========
     async function init() {
       // HTTPS チェック

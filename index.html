@@ -802,6 +802,154 @@
       box-shadow: none;
     }
 
+    /* ========== まとめ撮り結果表示エリア ========== */
+    .batch-results-section {
+      margin: 2rem 0;
+      display: none;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    .batch-results-section.visible {
+      display: block;
+      animation: fadeSlideUp 0.6s ease-out forwards;
+    }
+
+    .batch-results-header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .batch-results-header h2 {
+      color: var(--sumi);
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .batch-count {
+      color: var(--sumi-light);
+      font-size: 1rem;
+    }
+
+    .batch-results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .batch-receipt-card {
+      background: var(--washi);
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 2px 10px var(--kage);
+      transition: all 0.3s ease;
+    }
+
+    .batch-receipt-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px var(--kage);
+    }
+
+    .batch-receipt-thumbnail {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-bottom: 0.75rem;
+      background: var(--kage-light);
+    }
+
+    .batch-receipt-info h3 {
+      color: var(--sumi);
+      font-size: 1.1rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .batch-receipt-info .amount {
+      color: var(--shu);
+      font-size: 1.3rem;
+      font-weight: bold;
+      margin-bottom: 0.75rem;
+    }
+
+    .batch-receipt-info .date {
+      color: var(--sumi-light);
+      font-size: 0.85rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .batch-category-select {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 4px;
+      border: 1px solid var(--kage-light);
+      margin-bottom: 0.75rem;
+      font-size: 0.9rem;
+      background: white;
+    }
+
+    .batch-save-btn {
+      width: 100%;
+      padding: 0.6rem;
+      background: var(--ai);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .batch-save-btn:hover {
+      background: var(--ai-light);
+      transform: translateY(-1px);
+    }
+
+    .batch-save-btn:disabled {
+      background: var(--kage);
+      cursor: not-allowed;
+    }
+
+    .batch-save-btn.saved {
+      background: var(--success);
+    }
+
+    .batch-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .batch-actions .btn {
+      padding: 0.8rem 2rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .batch-actions .btn-primary {
+      background: var(--shu);
+      color: white;
+    }
+
+    .batch-actions .btn-primary:hover {
+      background: var(--shu-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px var(--shu-glow);
+    }
+
+    .batch-actions .btn-secondary {
+      background: var(--kage-light);
+      color: var(--sumi);
+    }
+
+    .batch-actions .btn-secondary:hover {
+      background: var(--kage);
+    }
+
     /* ========== 結果表示エリア ========== */
     .result-section {
       margin: 2rem 0;
@@ -1431,6 +1579,21 @@
       </button>
     </div>
 
+    <!-- まとめ撮り結果表示エリア -->
+    <section class="batch-results-section" id="batchResultsSection" aria-label="まとめ撮り結果">
+      <div class="batch-results-header">
+        <h2>まとめ撮り完了</h2>
+        <p class="batch-count"><span id="batchCount">0</span>件のレシートを検出しました</p>
+      </div>
+      <div class="batch-results-grid" id="batchResultsGrid">
+        <!-- レシートカードが動的に追加される -->
+      </div>
+      <div class="batch-actions">
+        <button class="btn btn-primary" id="saveAllBtn">すべて保存</button>
+        <button class="btn btn-secondary" id="closeBatchBtn">閉じる</button>
+      </div>
+    </section>
+
     <!-- 結果表示エリア -->
     <section class="result-section" id="resultSection" aria-label="読み取り結果">
       <div class="result-card" id="resultCard">
@@ -1504,6 +1667,13 @@
     const loadingOverlay = document.getElementById('loadingOverlay');
     const categorySection = document.getElementById('categorySection');
     const categoryButtons = document.getElementById('categoryButtons');
+
+    // まとめ撮り結果表示要素
+    const batchResultsSection = document.getElementById('batchResultsSection');
+    const batchCount = document.getElementById('batchCount');
+    const batchResultsGrid = document.getElementById('batchResultsGrid');
+    const saveAllBtn = document.getElementById('saveAllBtn');
+    const closeBatchBtn = document.getElementById('closeBatchBtn');
 
     // カメラ関連要素
     const cameraVideo = document.getElementById('cameraVideo');
@@ -1771,6 +1941,13 @@
       // 撮影モード切り替え
       singleModeBtn.addEventListener('click', () => selectCaptureMode('single'));
       continuousModeBtn.addEventListener('click', () => selectCaptureMode('continuous'));
+
+      // バッチ結果の保存・閉じる
+      saveAllBtn.addEventListener('click', saveAllReceipts);
+      closeBatchBtn.addEventListener('click', closeBatchResults);
+
+      // バッチ結果グリッド内のボタン（イベント委譲）
+      batchResultsGrid.addEventListener('click', handleBatchCardClick);
 
       // ページ非表示時にカメラを停止
       document.addEventListener('visibilitychange', () => {
@@ -2166,14 +2343,168 @@
 
       console.log(`まとめ撮り停止。解析済みレシート数: ${receiptResults.length}`);
 
-      // 解析済みレシートがある場合、最新の結果を再表示
+      // 解析済みレシートがある場合、バッチ結果UIを表示
       if (receiptResults.length > 0) {
         console.log(`${receiptResults.length}件のレシートを解析しました`);
-        const latestResult = receiptResults[receiptResults.length - 1];
-        displayResults(latestResult.data);
+        displayBatchResults(receiptResults);
       } else {
         console.log('レシートが検出されませんでした');
       }
+    }
+
+    // バッチ結果を表示
+    function displayBatchResults(results) {
+      // カウント表示
+      batchCount.textContent = results.length;
+
+      // グリッドをクリア
+      batchResultsGrid.innerHTML = '';
+
+      // 各レシートのカードを生成
+      results.forEach((result, index) => {
+        const card = createBatchReceiptCard(result, index);
+        batchResultsGrid.appendChild(card);
+      });
+
+      // バッチ結果セクションを表示
+      resultSection.classList.remove('visible');
+      batchResultsSection.classList.add('visible');
+
+      // スクロール
+      setTimeout(() => {
+        batchResultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
+    }
+
+    // バッチレシートカードを生成
+    function createBatchReceiptCard(result, index) {
+      const card = document.createElement('div');
+      card.className = 'batch-receipt-card';
+      card.dataset.index = index;
+
+      const data = result.data;
+      const storeName = data.storeName || '不明な店舗';
+      const date = data.date || '-';
+      const total = data.total ? `¥${data.total.toLocaleString()}` : '-';
+
+      card.innerHTML = `
+        <img src="${result.imageDataUrl}" alt="レシート画像" class="batch-receipt-thumbnail">
+        <div class="batch-receipt-info">
+          <h3>${storeName}</h3>
+          <div class="date">${date}</div>
+          <div class="amount">${total}</div>
+        </div>
+        <select class="batch-category-select" data-index="${index}">
+          <option value="">カテゴリを選択</option>
+          ${categories.map(cat => `<option value="${cat.id}">${cat.icon} ${cat.name}</option>`).join('')}
+        </select>
+        <button class="batch-save-btn" data-index="${index}">保存</button>
+      `;
+
+      return card;
+    }
+
+    // バッチカード内のクリックイベント処理
+    function handleBatchCardClick(e) {
+      const saveBtn = e.target.closest('.batch-save-btn');
+      if (saveBtn) {
+        const index = parseInt(saveBtn.dataset.index);
+        saveSingleReceipt(index);
+      }
+    }
+
+    // 単一レシートを保存
+    async function saveSingleReceipt(index) {
+      const result = receiptResults[index];
+      if (!result) return;
+
+      const selectElement = batchResultsGrid.querySelector(`.batch-category-select[data-index="${index}"]`);
+      const categoryId = selectElement ? selectElement.value : '';
+
+      if (!categoryId) {
+        alert('カテゴリを選択してください');
+        return;
+      }
+
+      const saveBtn = batchResultsGrid.querySelector(`.batch-save-btn[data-index="${index}"]`);
+      saveBtn.disabled = true;
+      saveBtn.textContent = '保存中...';
+
+      try {
+        // レシートデータを構築
+        const receiptData = {
+          imageDataUrl: result.imageDataUrl,
+          storeName: result.data.storeName || '不明な店舗',
+          date: result.data.date || new Date().toISOString().split('T')[0],
+          total: result.data.total || 0,
+          items: result.data.items || [],
+          categoryId: categoryId,
+          timestamp: result.timestamp || Date.now(),
+          createdAt: new Date().toISOString()
+        };
+
+        // LocalStorageに保存
+        const savedId = storage.save(receiptData);
+        console.log('レシートを保存しました:', savedId);
+
+        // ボタンの表示を変更
+        saveBtn.textContent = '保存済み';
+        saveBtn.classList.add('saved');
+
+      } catch (error) {
+        console.error('保存エラー:', error);
+        alert('保存に失敗しました: ' + error.message);
+        saveBtn.disabled = false;
+        saveBtn.textContent = '保存';
+      }
+    }
+
+    // すべてのレシートを保存
+    async function saveAllReceipts() {
+      const selects = batchResultsGrid.querySelectorAll('.batch-category-select');
+      let hasEmptyCategory = false;
+
+      // すべてカテゴリが選択されているかチェック
+      selects.forEach(select => {
+        if (!select.value) {
+          hasEmptyCategory = true;
+        }
+      });
+
+      if (hasEmptyCategory) {
+        alert('すべてのレシートのカテゴリを選択してください');
+        return;
+      }
+
+      saveAllBtn.disabled = true;
+      saveAllBtn.textContent = '保存中...';
+
+      try {
+        // すべてのレシートを順番に保存
+        for (let i = 0; i < receiptResults.length; i++) {
+          const saveBtn = batchResultsGrid.querySelector(`.batch-save-btn[data-index="${i}"]`);
+          if (!saveBtn.classList.contains('saved')) {
+            await saveSingleReceipt(i);
+          }
+        }
+
+        alert(`${receiptResults.length}件のレシートを保存しました`);
+        closeBatchResults();
+
+      } catch (error) {
+        console.error('一括保存エラー:', error);
+        alert('一括保存に失敗しました');
+        saveAllBtn.disabled = false;
+        saveAllBtn.textContent = 'すべて保存';
+      }
+    }
+
+    // バッチ結果を閉じる
+    function closeBatchResults() {
+      batchResultsSection.classList.remove('visible');
+      receiptResults = [];
+      updateContinuousCount();
+      console.log('バッチ結果を閉じました');
     }
 
     // 自動解析関数（レシート検出時に呼ばれる）

@@ -916,6 +916,54 @@
       background: var(--kage-light);
     }
 
+    /* まとめ撮り編集セクション */
+    .batch-receipt-edit {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .batch-edit-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .batch-edit-field label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--sumi-light);
+    }
+
+    .batch-edit-field input,
+    .batch-edit-field select {
+      padding: 0.5rem;
+      border: 1.5px solid var(--kage);
+      border-radius: 4px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      color: var(--sumi);
+      background: white;
+      transition: all 0.2s;
+    }
+
+    .batch-edit-field input:focus,
+    .batch-edit-field select:focus {
+      outline: none;
+      border-color: var(--ai);
+      box-shadow: 0 0 0 2px rgba(139, 169, 195, 0.1);
+    }
+
+    .batch-store-input {
+      font-weight: 600;
+    }
+
+    .batch-amount-input {
+      font-weight: 700;
+      color: var(--shu);
+    }
+
     .batch-receipt-info h3 {
       color: var(--sumi);
       font-size: 1.1rem;
@@ -947,19 +995,25 @@
 
     .batch-save-btn {
       width: 100%;
-      padding: 0.6rem;
-      background: var(--ai);
+      padding: 0.75rem;
+      background: var(--shu);
       color: white;
       border: none;
-      border-radius: 4px;
-      font-size: 0.9rem;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
     }
 
-    .batch-save-btn:hover {
-      background: var(--ai-light);
-      transform: translateY(-1px);
+    .batch-save-btn:hover:not(:disabled) {
+      background: var(--shu-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(217, 83, 79, 0.3);
     }
 
     .batch-save-btn:disabled {
@@ -968,7 +1022,7 @@
     }
 
     .batch-save-btn.saved {
-      background: var(--success);
+      background: var(--ai);
     }
 
     .batch-actions {
@@ -1049,12 +1103,93 @@
     }
 
     .result-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
       margin-bottom: 1.25rem;
       padding-bottom: 1rem;
       border-bottom: 1px solid var(--kage);
+    }
+
+    /* 編集セクション */
+    .result-edit-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .edit-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .edit-field label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--sumi);
+    }
+
+    .edit-field input,
+    .edit-field select {
+      padding: 0.75rem;
+      border: 2px solid var(--kage);
+      border-radius: 6px;
+      font-size: 1rem;
+      font-family: inherit;
+      color: var(--sumi);
+      background: white;
+      transition: all 0.2s;
+    }
+
+    .edit-field input:focus,
+    .edit-field select:focus {
+      outline: none;
+      border-color: var(--ai);
+      box-shadow: 0 0 0 3px rgba(139, 169, 195, 0.1);
+    }
+
+    .store-name-input {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .total-amount-input {
+      font-weight: 700;
+      color: var(--shu);
+      font-size: 1.1rem;
+    }
+
+    /* 登録ボタン */
+    .result-actions {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--kage);
+      display: flex;
+      justify-content: center;
+    }
+
+    .btn-register {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      transition: all 0.3s;
+    }
+
+    .btn-register:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(217, 83, 79, 0.3);
+    }
+
+    .btn-register:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .btn-register.saved {
+      background: var(--ai);
+      border-color: var(--ai);
     }
 
     .store-name {
@@ -2177,14 +2312,20 @@
     <section class="result-section" id="resultSection" aria-label="読み取り結果">
       <div class="result-card" id="resultCard">
         <div class="result-header">
-          <div>
-            <h2 class="store-name" id="storeName">-</h2>
-            <p class="receipt-date" id="receiptDate">-</p>
+          <div class="result-edit-section">
+            <div class="edit-field">
+              <label>店舗名</label>
+              <input type="text" class="store-name-input" id="storeNameInput" placeholder="店舗名を入力">
+            </div>
+            <div class="edit-field">
+              <label>日付</label>
+              <input type="date" class="receipt-date-input" id="receiptDateInput">
+            </div>
+            <div class="edit-field">
+              <label>合計金額</label>
+              <input type="number" class="total-amount-input" id="totalAmountInput" placeholder="金額を入力">
+            </div>
           </div>
-        </div>
-        <div class="result-total">
-          <p class="total-label">合計金額</p>
-          <p class="total-amount" id="totalAmount">-</p>
         </div>
         <div class="category-section" id="categorySection">
           <p class="category-label">カテゴリ</p>
@@ -2195,6 +2336,16 @@
         <ul class="result-items" id="resultItems">
           <!-- 動的に追加 -->
         </ul>
+        <div class="result-actions">
+          <button class="btn btn-primary btn-register" id="registerReceiptBtn">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+              <polyline points="17 21 17 13 7 13 7 21"/>
+              <polyline points="7 3 7 8 15 8"/>
+            </svg>
+            登録
+          </button>
+        </div>
       </div>
     </section>
 
@@ -2335,13 +2486,14 @@
     const galleryInput = document.getElementById('galleryInput');
     const resultSection = document.getElementById('resultSection');
     const resultCard = document.getElementById('resultCard');
-    const storeName = document.getElementById('storeName');
-    const receiptDate = document.getElementById('receiptDate');
-    const totalAmount = document.getElementById('totalAmount');
+    const storeNameInput = document.getElementById('storeNameInput');
+    const receiptDateInput = document.getElementById('receiptDateInput');
+    const totalAmountInput = document.getElementById('totalAmountInput');
     const resultItems = document.getElementById('resultItems');
     const loadingOverlay = document.getElementById('loadingOverlay');
     const categorySection = document.getElementById('categorySection');
     const categoryButtons = document.getElementById('categoryButtons');
+    const registerReceiptBtn = document.getElementById('registerReceiptBtn');
 
     // まとめ撮り結果表示要素
     const batchResultsSection = document.getElementById('batchResultsSection');
@@ -2676,6 +2828,11 @@
 
       // バッチ結果グリッド内のボタン（イベント委譲）
       batchResultsGrid.addEventListener('click', handleBatchCardClick);
+
+      // 1枚撮影の登録ボタン
+      if (registerReceiptBtn) {
+        registerReceiptBtn.addEventListener('click', registerSingleReceipt);
+      }
 
       // ページ非表示時にカメラを停止
       document.addEventListener('visibilitychange', () => {
@@ -3490,22 +3647,41 @@
       card.dataset.index = index;
 
       const data = result.data;
-      const storeName = data.storeName || '不明な店舗';
-      const date = data.date || '-';
-      const total = data.total ? `¥${data.total.toLocaleString()}` : '-';
+      const storeName = data.storeName || '';
+      const date = data.date || new Date().toISOString().split('T')[0];
+      const total = data.total || '';
 
       card.innerHTML = `
         <img src="${result.imageDataUrl}" alt="レシート画像" class="batch-receipt-thumbnail">
-        <div class="batch-receipt-info">
-          <h3>${storeName}</h3>
-          <div class="date">${date}</div>
-          <div class="amount">${total}</div>
+        <div class="batch-receipt-edit">
+          <div class="batch-edit-field">
+            <label>店舗名</label>
+            <input type="text" class="batch-store-input" data-index="${index}" value="${escapeHtml(storeName)}" placeholder="店舗名">
+          </div>
+          <div class="batch-edit-field">
+            <label>日付</label>
+            <input type="date" class="batch-date-input" data-index="${index}" value="${date}">
+          </div>
+          <div class="batch-edit-field">
+            <label>金額</label>
+            <input type="number" class="batch-amount-input" data-index="${index}" value="${total}" placeholder="金額">
+          </div>
+          <div class="batch-edit-field">
+            <label>カテゴリ</label>
+            <select class="batch-category-select" data-index="${index}">
+              <option value="">カテゴリを選択</option>
+              ${categories.map(cat => `<option value="${cat.id}">${cat.icon} ${cat.name}</option>`).join('')}
+            </select>
+          </div>
         </div>
-        <select class="batch-category-select" data-index="${index}">
-          <option value="">カテゴリを選択</option>
-          ${categories.map(cat => `<option value="${cat.id}">${cat.icon} ${cat.name}</option>`).join('')}
-        </select>
-        <button class="batch-save-btn" data-index="${index}">保存</button>
+        <button class="batch-save-btn" data-index="${index}">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/>
+            <polyline points="7 3 7 8 15 8"/>
+          </svg>
+          登録
+        </button>
       `;
 
       return card;
@@ -3525,8 +3701,23 @@
       const result = receiptResults[index];
       if (!result) return;
 
+      // 編集された値を取得
+      const storeInput = batchResultsGrid.querySelector(`.batch-store-input[data-index="${index}"]`);
+      const dateInput = batchResultsGrid.querySelector(`.batch-date-input[data-index="${index}"]`);
+      const amountInput = batchResultsGrid.querySelector(`.batch-amount-input[data-index="${index}"]`);
       const selectElement = batchResultsGrid.querySelector(`.batch-category-select[data-index="${index}"]`);
+
+      const storeName = storeInput ? storeInput.value.trim() : '';
+      const date = dateInput ? dateInput.value : '';
+      const total = amountInput ? parseFloat(amountInput.value) || 0 : 0;
       const categoryId = selectElement ? selectElement.value : '';
+
+      // バリデーション
+      if (!storeName) {
+        alert('店舗名を入力してください');
+        storeInput.focus();
+        return;
+      }
 
       if (!categoryId) {
         alert('カテゴリを選択してください');
@@ -3535,15 +3726,15 @@
 
       const saveBtn = batchResultsGrid.querySelector(`.batch-save-btn[data-index="${index}"]`);
       saveBtn.disabled = true;
-      saveBtn.textContent = '保存中...';
+      saveBtn.innerHTML = '登録中...';
 
       try {
         // レシートデータを構築
         const receiptData = {
           imageDataUrl: result.imageDataUrl,
-          storeName: result.data.storeName || '不明な店舗',
-          date: result.data.date || new Date().toISOString().split('T')[0],
-          total: result.data.total || 0,
+          storeName: storeName,
+          date: date || new Date().toISOString().split('T')[0],
+          total: total,
           items: result.data.items || [],
           categoryId: categoryId,
           timestamp: result.timestamp || Date.now(),
@@ -3555,7 +3746,7 @@
         console.log('レシートを保存しました:', savedId);
 
         // ボタンの表示を変更
-        saveBtn.textContent = '保存済み';
+        saveBtn.innerHTML = '登録済み';
         saveBtn.classList.add('saved');
 
         // ダッシュボードと履歴を更新
@@ -3569,7 +3760,14 @@
         console.error('保存エラー:', error);
         alert('保存に失敗しました: ' + error.message);
         saveBtn.disabled = false;
-        saveBtn.textContent = '保存';
+        saveBtn.innerHTML = `
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/>
+            <polyline points="7 3 7 8 15 8"/>
+          </svg>
+          登録
+        `;
       }
     }
 
@@ -4247,10 +4445,22 @@
 
     // 結果表示関数
     function displayResults(data) {
-      // データをセット
-      storeName.textContent = data.storeName;
-      receiptDate.textContent = data.date;
-      totalAmount.textContent = data.total;
+      // 編集可能な入力フィールドにデータをセット
+      const storeNameInput = document.getElementById('storeNameInput');
+      const receiptDateInput = document.getElementById('receiptDateInput');
+      const totalAmountInput = document.getElementById('totalAmountInput');
+
+      if (storeNameInput) storeNameInput.value = data.storeName || '';
+      if (receiptDateInput) receiptDateInput.value = data.date || new Date().toISOString().split('T')[0];
+      if (totalAmountInput) totalAmountInput.value = data.total || '';
+
+      // 現在のレシートデータを保存
+      currentReceiptData = {
+        storeName: data.storeName,
+        date: data.date,
+        total: data.total,
+        items: data.items || []
+      };
 
       // カテゴリボタンを生成
       categoryButtons.innerHTML = '';
@@ -4349,6 +4559,99 @@
         } catch (e) {
           console.warn('履歴の保存に失敗:', e);
         }
+      }
+    }
+
+    // 1枚撮影のレシート登録
+    async function registerSingleReceipt() {
+      // 編集された値を取得
+      const storeName = storeNameInput ? storeNameInput.value.trim() : '';
+      const date = receiptDateInput ? receiptDateInput.value : '';
+      const total = totalAmountInput ? parseFloat(totalAmountInput.value) || 0 : 0;
+      const categoryId = selectedCategory;
+
+      // バリデーション
+      if (!storeName) {
+        alert('店舗名を入力してください');
+        if (storeNameInput) storeNameInput.focus();
+        return;
+      }
+
+      if (!categoryId) {
+        alert('カテゴリを選択してください');
+        return;
+      }
+
+      // ボタンを無効化
+      registerReceiptBtn.disabled = true;
+      registerReceiptBtn.innerHTML = '登録中...';
+
+      try {
+        // レシートデータを構築
+        const receiptData = {
+          imageDataUrl: capturedImageData || '',
+          storeName: storeName,
+          date: date || new Date().toISOString().split('T')[0],
+          total: total,
+          items: currentReceiptData?.items || [],
+          categoryId: categoryId,
+          timestamp: Date.now(),
+          createdAt: new Date().toISOString()
+        };
+
+        // LocalStorageに保存
+        const savedId = storage.save(receiptData);
+        console.log('レシートを保存しました:', savedId);
+
+        // 成功メッセージを表示
+        registerReceiptBtn.innerHTML = `
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          登録完了
+        `;
+        registerReceiptBtn.classList.add('saved');
+
+        // ダッシュボードと履歴を更新
+        if (currentScreen === 'dashboard') {
+          loadDashboard();
+        } else if (currentScreen === 'history') {
+          loadHistory();
+        }
+
+        // 2秒後に結果を閉じてカメラに戻る
+        setTimeout(() => {
+          resultSection.classList.remove('visible');
+          registerReceiptBtn.disabled = false;
+          registerReceiptBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+              <polyline points="17 21 17 13 7 13 7 21"/>
+              <polyline points="7 3 7 8 15 8"/>
+            </svg>
+            登録
+          `;
+          registerReceiptBtn.classList.remove('saved');
+          selectedCategory = null;
+
+          // カメラを再開
+          if (currentMode === 'camera') {
+            retakePhoto();
+          }
+        }, 2000);
+
+      } catch (error) {
+        console.error('保存エラー:', error);
+        alert('保存に失敗しました: ' + error.message);
+        registerReceiptBtn.disabled = false;
+        registerReceiptBtn.innerHTML = `
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/>
+            <polyline points="7 3 7 8 15 8"/>
+          </svg>
+          登録
+        `;
       }
     }
 

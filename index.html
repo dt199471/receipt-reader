@@ -571,6 +571,62 @@
       height: 20px;
     }
 
+    /* ========== ナビゲーションバー ========== */
+    .main-nav {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      padding: 0.5rem;
+      background: var(--kage-light);
+      border-radius: 12px;
+      opacity: 0;
+      animation: fadeSlideUp 0.8s ease-out 0.6s forwards;
+    }
+
+    .nav-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.75rem 0.5rem;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--sumi-light);
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      touch-action: manipulation;
+    }
+
+    .nav-btn svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .nav-btn.active {
+      background: var(--shu);
+      color: white;
+      box-shadow: 0 2px 10px var(--shu-glow);
+    }
+
+    .nav-btn:not(.active):hover {
+      background: rgba(0, 0, 0, 0.05);
+      color: var(--sumi);
+    }
+
+    /* 画面コンテナ */
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
     /* ========== アクションボタン ========== */
     .action-buttons {
       display: flex;
@@ -1451,6 +1507,41 @@
         ギャラリー
       </button>
     </div>
+
+    <!-- ナビゲーションバー -->
+    <nav class="main-nav">
+      <button class="nav-btn active" data-screen="camera" id="navCamera">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
+        <span>カメラ</span>
+      </button>
+      <button class="nav-btn" data-screen="dashboard" id="navDashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/>
+          <rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        <span>ダッシュボード</span>
+      </button>
+      <button class="nav-btn" data-screen="calendar" id="navCalendar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <span>カレンダー</span>
+      </button>
+      <button class="nav-btn" data-screen="history" id="navHistory">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 3h7l2 3h9a2 2 0 012 2v11a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/>
+        </svg>
+        <span>履歴</span>
+      </button>
+    </nav>
 
     <!-- スキャンエリア -->
     <section class="scan-section" aria-label="レシートスキャンエリア">

@@ -802,6 +802,154 @@
       box-shadow: none;
     }
 
+    /* ========== まとめ撮り結果表示エリア ========== */
+    .batch-results-section {
+      margin: 2rem 0;
+      display: none;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    .batch-results-section.visible {
+      display: block;
+      animation: fadeSlideUp 0.6s ease-out forwards;
+    }
+
+    .batch-results-header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .batch-results-header h2 {
+      color: var(--sumi);
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .batch-count {
+      color: var(--sumi-light);
+      font-size: 1rem;
+    }
+
+    .batch-results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .batch-receipt-card {
+      background: var(--washi);
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 2px 10px var(--kage);
+      transition: all 0.3s ease;
+    }
+
+    .batch-receipt-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px var(--kage);
+    }
+
+    .batch-receipt-thumbnail {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-bottom: 0.75rem;
+      background: var(--kage-light);
+    }
+
+    .batch-receipt-info h3 {
+      color: var(--sumi);
+      font-size: 1.1rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .batch-receipt-info .amount {
+      color: var(--shu);
+      font-size: 1.3rem;
+      font-weight: bold;
+      margin-bottom: 0.75rem;
+    }
+
+    .batch-receipt-info .date {
+      color: var(--sumi-light);
+      font-size: 0.85rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .batch-category-select {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 4px;
+      border: 1px solid var(--kage-light);
+      margin-bottom: 0.75rem;
+      font-size: 0.9rem;
+      background: white;
+    }
+
+    .batch-save-btn {
+      width: 100%;
+      padding: 0.6rem;
+      background: var(--ai);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .batch-save-btn:hover {
+      background: var(--ai-light);
+      transform: translateY(-1px);
+    }
+
+    .batch-save-btn:disabled {
+      background: var(--kage);
+      cursor: not-allowed;
+    }
+
+    .batch-save-btn.saved {
+      background: var(--success);
+    }
+
+    .batch-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .batch-actions .btn {
+      padding: 0.8rem 2rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .batch-actions .btn-primary {
+      background: var(--shu);
+      color: white;
+    }
+
+    .batch-actions .btn-primary:hover {
+      background: var(--shu-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px var(--shu-glow);
+    }
+
+    .batch-actions .btn-secondary {
+      background: var(--kage-light);
+      color: var(--sumi);
+    }
+
+    .batch-actions .btn-secondary:hover {
+      background: var(--kage);
+    }
+
     /* ========== 結果表示エリア ========== */
     .result-section {
       margin: 2rem 0;
@@ -1431,6 +1579,21 @@
       </button>
     </div>
 
+    <!-- まとめ撮り結果表示エリア -->
+    <section class="batch-results-section" id="batchResultsSection" aria-label="まとめ撮り結果">
+      <div class="batch-results-header">
+        <h2>まとめ撮り完了</h2>
+        <p class="batch-count"><span id="batchCount">0</span>件のレシートを検出しました</p>
+      </div>
+      <div class="batch-results-grid" id="batchResultsGrid">
+        <!-- レシートカードが動的に追加される -->
+      </div>
+      <div class="batch-actions">
+        <button class="btn btn-primary" id="saveAllBtn">すべて保存</button>
+        <button class="btn btn-secondary" id="closeBatchBtn">閉じる</button>
+      </div>
+    </section>
+
     <!-- 結果表示エリア -->
     <section class="result-section" id="resultSection" aria-label="読み取り結果">
       <div class="result-card" id="resultCard">
@@ -1505,6 +1668,13 @@
     const categorySection = document.getElementById('categorySection');
     const categoryButtons = document.getElementById('categoryButtons');
 
+    // まとめ撮り結果表示要素
+    const batchResultsSection = document.getElementById('batchResultsSection');
+    const batchCount = document.getElementById('batchCount');
+    const batchResultsGrid = document.getElementById('batchResultsGrid');
+    const saveAllBtn = document.getElementById('saveAllBtn');
+    const closeBatchBtn = document.getElementById('closeBatchBtn');
+
     // カメラ関連要素
     const cameraVideo = document.getElementById('cameraVideo');
     const captureCanvas = document.getElementById('captureCanvas');
@@ -1544,6 +1714,9 @@
     let isContinuousRunning = false;
     let continuousIntervalId = null;
     let continuousFrames = []; // { dataUrl, thumbUrl, score }
+    let isAnalyzing = false; // 解析中フラグ（重複防止）
+    let receiptResults = []; // 複数のレシート解析結果を保存
+    let lastReceiptDetectionTime = 0; // 最後のレシート検出時刻
 
     // ========== カテゴリ定義 ==========
     const categories = [
@@ -1555,6 +1728,120 @@
       { id: 'education', name: '教育', icon: '📚', class: 'category-education' },
       { id: 'other', name: 'その他', icon: '📝', class: 'category-other' }
     ];
+
+    // ========== LocalStorage管理クラス ==========
+    class ReceiptStorage {
+      constructor() {
+        this.storageKey = 'receipts';
+        this.settingsKey = 'settings';
+        this.maxReceipts = 100; // 最大保存件数
+      }
+
+      // すべてのレシートを取得
+      getAll() {
+        try {
+          const data = localStorage.getItem(this.storageKey);
+          return data ? JSON.parse(data) : [];
+        } catch (error) {
+          console.error('LocalStorage読み込みエラー:', error);
+          return [];
+        }
+      }
+
+      // レシートを保存
+      save(receipt) {
+        try {
+          const receipts = this.getAll();
+
+          // IDがない場合は生成
+          if (!receipt.id) {
+            receipt.id = 'receipt_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+          }
+
+          // タイムスタンプがない場合は追加
+          if (!receipt.timestamp) {
+            receipt.timestamp = Date.now();
+          }
+
+          if (!receipt.createdAt) {
+            receipt.createdAt = new Date().toISOString();
+          }
+
+          receipts.push(receipt);
+
+          // 最大件数を超えたら古いものを削除
+          if (receipts.length > this.maxReceipts) {
+            receipts.sort((a, b) => a.timestamp - b.timestamp);
+            receipts.splice(0, receipts.length - this.maxReceipts);
+          }
+
+          localStorage.setItem(this.storageKey, JSON.stringify(receipts));
+          console.log('レシートを保存しました:', receipt.id);
+          return receipt.id;
+        } catch (error) {
+          console.error('LocalStorage保存エラー:', error);
+          if (error.name === 'QuotaExceededError') {
+            // 容量超過の場合、古いデータを削除してリトライ
+            this.cleanupOldData();
+            return this.save(receipt);
+          }
+          throw error;
+        }
+      }
+
+      // 指定日付のレシートを取得
+      getByDate(dateString) {
+        const receipts = this.getAll();
+        return receipts.filter(r => r.date === dateString);
+      }
+
+      // 指定月のレシートを取得
+      getByMonth(year, month) {
+        const receipts = this.getAll();
+        const targetMonth = `${year}-${String(month).padStart(2, '0')}`;
+        return receipts.filter(r => r.date && r.date.startsWith(targetMonth));
+      }
+
+      // IDでレシートを取得
+      getById(id) {
+        const receipts = this.getAll();
+        return receipts.find(r => r.id === id);
+      }
+
+      // レシートを削除
+      delete(id) {
+        try {
+          const receipts = this.getAll();
+          const filtered = receipts.filter(r => r.id !== id);
+          localStorage.setItem(this.storageKey, JSON.stringify(filtered));
+          console.log('レシートを削除しました:', id);
+          return true;
+        } catch (error) {
+          console.error('削除エラー:', error);
+          return false;
+        }
+      }
+
+      // 古いデータをクリーンアップ
+      cleanupOldData() {
+        const receipts = this.getAll();
+        if (receipts.length > 50) {
+          receipts.sort((a, b) => a.timestamp - b.timestamp);
+          const keep = receipts.slice(-50);
+          localStorage.setItem(this.storageKey, JSON.stringify(keep));
+          console.log('古いデータを削除しました');
+        }
+      }
+
+      // 全データをクリア
+      clearAll() {
+        localStorage.removeItem(this.storageKey);
+        console.log('全データをクリアしました');
+      }
+    }
+
+    // ストレージインスタンスを作成
+    const storage = new ReceiptStorage();
 
     // ========== 初期化 ==========
     async function init() {
@@ -1654,6 +1941,13 @@
       // 撮影モード切り替え
       singleModeBtn.addEventListener('click', () => selectCaptureMode('single'));
       continuousModeBtn.addEventListener('click', () => selectCaptureMode('continuous'));
+
+      // バッチ結果の保存・閉じる
+      saveAllBtn.addEventListener('click', saveAllReceipts);
+      closeBatchBtn.addEventListener('click', closeBatchResults);
+
+      // バッチ結果グリッド内のボタン（イベント委譲）
+      batchResultsGrid.addEventListener('click', handleBatchCardClick);
 
       // ページ非表示時にカメラを停止
       document.addEventListener('visibilitychange', () => {
@@ -1954,7 +2248,9 @@
       if (!isCameraSupported()) return;
 
       // 状態リセット
-      continuousFrames = [];
+      receiptResults = [];
+      isAnalyzing = false;
+      lastReceiptDetectionTime = 0;
       updateContinuousCount();
       isContinuousRunning = true;
 
@@ -1967,22 +2263,28 @@
         startCamera();
       }
 
-      // 1秒ごとにフレームをサンプリング
+      // 500msごとにフレームをチェック（レシート検出）
       if (continuousIntervalId) {
         clearInterval(continuousIntervalId);
       }
 
-      let lastSample = null; // { data: Uint8ClampedArray, w, h }
-
       const tempCanvas = document.createElement('canvas');
       const tempCtx = tempCanvas.getContext('2d');
-      // 読み取り精度向上のため解像度を上げる
+      // レシート検出用の解像度
       const TARGET_WIDTH = 640;
       const TARGET_HEIGHT = 480;
 
-      continuousIntervalId = setInterval(() => {
+      continuousIntervalId = setInterval(async () => {
         if (!isStreaming || cameraVideo.videoWidth === 0) return;
+        if (isAnalyzing) return; // 解析中は次の判定をスキップ
 
+        // 最後の検出から3秒以内はスキップ（同じレシートを複数回解析しない）
+        const now = Date.now();
+        if (now - lastReceiptDetectionTime < 3000) {
+          return;
+        }
+
+        // フレームをキャプチャ
         tempCanvas.width = TARGET_WIDTH;
         tempCanvas.height = TARGET_HEIGHT;
         tempCtx.drawImage(cameraVideo, 0, 0, TARGET_WIDTH, TARGET_HEIGHT);
@@ -1994,52 +2296,41 @@
           h: TARGET_HEIGHT,
         };
 
-        let diffScore = 1;
-        if (lastSample) {
-          diffScore = computeFrameDifference(lastSample, current);
-        }
+        // レシート判定
+        const isReceipt = detectReceipt(current);
 
-        // 差分しきい値を緩和（より多くのフレームを保存して精度向上）
-        const DIFF_THRESHOLD = 0.05;
+        if (isReceipt) {
+          console.log('レシートを検出！自動解析を開始します');
+          lastReceiptDetectionTime = now;
+          isAnalyzing = true;
 
-        if (!lastSample || diffScore > DIFF_THRESHOLD) {
-          // キーフレームとして保存（読み取り精度向上のため高品質に）
-          const fullDataUrl = tempCanvas.toDataURL('image/jpeg', 0.8);
+          // 高品質な画像を取得（解析用）
+          const fullCanvas = document.createElement('canvas');
+          const fullCtx = fullCanvas.getContext('2d');
+          fullCanvas.width = cameraVideo.videoWidth;
+          fullCanvas.height = cameraVideo.videoHeight;
+          fullCtx.drawImage(cameraVideo, 0, 0);
+          const fullDataUrl = fullCanvas.toDataURL('image/jpeg', 0.9);
 
-          // さらに小さいサムネイル（将来UIに使うかもしれないので保持）
-          const thumbCanvas = document.createElement('canvas');
-          const thumbCtx = thumbCanvas.getContext('2d');
-          const THUMB_W = 80;
-          const THUMB_H = 60;
-          thumbCanvas.width = THUMB_W;
-          thumbCanvas.height = THUMB_H;
-          thumbCtx.drawImage(tempCanvas, 0, 0, THUMB_W, THUMB_H);
-          const thumbUrl = thumbCanvas.toDataURL('image/jpeg', 0.8);
+          // シャッターエフェクト
+          shutterEffect.classList.add('flash');
+          setTimeout(() => shutterEffect.classList.remove('flash'), 200);
 
-          // シャープネス（鮮明度）スコアを計算してベストショット選択に使用
-          const sharpness = computeSharpnessScore(current);
-
-          continuousFrames.push({
-            dataUrl: fullDataUrl,
-            thumbUrl,
-            score: diffScore,
-            sharpness, // 鮮明度スコア（高いほど鮮明）
-          });
-
-          // 最大枚数制限（API料金対策）
-          const MAX_FRAMES = 8;
-          if (continuousFrames.length > MAX_FRAMES) {
-            continuousFrames.shift();
+          // 自動解析を実行
+          try {
+            await autoAnalyzeReceipt(fullDataUrl);
+          } catch (error) {
+            console.error('自動解析エラー:', error);
+          } finally {
+            isAnalyzing = false;
           }
-
-          updateContinuousCount();
-          lastSample = current;
         }
-      }, 1000); // 1秒ごと
+      }, 500); // 500msごとにチェック
     }
 
     function stopContinuousCapture() {
       isContinuousRunning = false;
+      isAnalyzing = false;
 
       if (continuousIntervalId) {
         clearInterval(continuousIntervalId);
@@ -2050,10 +2341,203 @@
       shutterBtn.classList.remove('recording');
       continuousModeText.textContent = 'まとめ撮り';
 
-      // フレームがある場合は解析ボタンを有効化
-      if (continuousFrames.length > 0) {
-        hasImage = true;
-        analyzeBtn.disabled = false;
+      console.log(`まとめ撮り停止。解析済みレシート数: ${receiptResults.length}`);
+
+      // 解析済みレシートがある場合、バッチ結果UIを表示
+      if (receiptResults.length > 0) {
+        console.log(`${receiptResults.length}件のレシートを解析しました`);
+        displayBatchResults(receiptResults);
+      } else {
+        console.log('レシートが検出されませんでした');
+      }
+    }
+
+    // バッチ結果を表示
+    function displayBatchResults(results) {
+      // カウント表示
+      batchCount.textContent = results.length;
+
+      // グリッドをクリア
+      batchResultsGrid.innerHTML = '';
+
+      // 各レシートのカードを生成
+      results.forEach((result, index) => {
+        const card = createBatchReceiptCard(result, index);
+        batchResultsGrid.appendChild(card);
+      });
+
+      // バッチ結果セクションを表示
+      resultSection.classList.remove('visible');
+      batchResultsSection.classList.add('visible');
+
+      // スクロール
+      setTimeout(() => {
+        batchResultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
+    }
+
+    // バッチレシートカードを生成
+    function createBatchReceiptCard(result, index) {
+      const card = document.createElement('div');
+      card.className = 'batch-receipt-card';
+      card.dataset.index = index;
+
+      const data = result.data;
+      const storeName = data.storeName || '不明な店舗';
+      const date = data.date || '-';
+      const total = data.total ? `¥${data.total.toLocaleString()}` : '-';
+
+      card.innerHTML = `
+        <img src="${result.imageDataUrl}" alt="レシート画像" class="batch-receipt-thumbnail">
+        <div class="batch-receipt-info">
+          <h3>${storeName}</h3>
+          <div class="date">${date}</div>
+          <div class="amount">${total}</div>
+        </div>
+        <select class="batch-category-select" data-index="${index}">
+          <option value="">カテゴリを選択</option>
+          ${categories.map(cat => `<option value="${cat.id}">${cat.icon} ${cat.name}</option>`).join('')}
+        </select>
+        <button class="batch-save-btn" data-index="${index}">保存</button>
+      `;
+
+      return card;
+    }
+
+    // バッチカード内のクリックイベント処理
+    function handleBatchCardClick(e) {
+      const saveBtn = e.target.closest('.batch-save-btn');
+      if (saveBtn) {
+        const index = parseInt(saveBtn.dataset.index);
+        saveSingleReceipt(index);
+      }
+    }
+
+    // 単一レシートを保存
+    async function saveSingleReceipt(index) {
+      const result = receiptResults[index];
+      if (!result) return;
+
+      const selectElement = batchResultsGrid.querySelector(`.batch-category-select[data-index="${index}"]`);
+      const categoryId = selectElement ? selectElement.value : '';
+
+      if (!categoryId) {
+        alert('カテゴリを選択してください');
+        return;
+      }
+
+      const saveBtn = batchResultsGrid.querySelector(`.batch-save-btn[data-index="${index}"]`);
+      saveBtn.disabled = true;
+      saveBtn.textContent = '保存中...';
+
+      try {
+        // レシートデータを構築
+        const receiptData = {
+          imageDataUrl: result.imageDataUrl,
+          storeName: result.data.storeName || '不明な店舗',
+          date: result.data.date || new Date().toISOString().split('T')[0],
+          total: result.data.total || 0,
+          items: result.data.items || [],
+          categoryId: categoryId,
+          timestamp: result.timestamp || Date.now(),
+          createdAt: new Date().toISOString()
+        };
+
+        // LocalStorageに保存
+        const savedId = storage.save(receiptData);
+        console.log('レシートを保存しました:', savedId);
+
+        // ボタンの表示を変更
+        saveBtn.textContent = '保存済み';
+        saveBtn.classList.add('saved');
+
+      } catch (error) {
+        console.error('保存エラー:', error);
+        alert('保存に失敗しました: ' + error.message);
+        saveBtn.disabled = false;
+        saveBtn.textContent = '保存';
+      }
+    }
+
+    // すべてのレシートを保存
+    async function saveAllReceipts() {
+      const selects = batchResultsGrid.querySelectorAll('.batch-category-select');
+      let hasEmptyCategory = false;
+
+      // すべてカテゴリが選択されているかチェック
+      selects.forEach(select => {
+        if (!select.value) {
+          hasEmptyCategory = true;
+        }
+      });
+
+      if (hasEmptyCategory) {
+        alert('すべてのレシートのカテゴリを選択してください');
+        return;
+      }
+
+      saveAllBtn.disabled = true;
+      saveAllBtn.textContent = '保存中...';
+
+      try {
+        // すべてのレシートを順番に保存
+        for (let i = 0; i < receiptResults.length; i++) {
+          const saveBtn = batchResultsGrid.querySelector(`.batch-save-btn[data-index="${i}"]`);
+          if (!saveBtn.classList.contains('saved')) {
+            await saveSingleReceipt(i);
+          }
+        }
+
+        alert(`${receiptResults.length}件のレシートを保存しました`);
+        closeBatchResults();
+
+      } catch (error) {
+        console.error('一括保存エラー:', error);
+        alert('一括保存に失敗しました');
+        saveAllBtn.disabled = false;
+        saveAllBtn.textContent = 'すべて保存';
+      }
+    }
+
+    // バッチ結果を閉じる
+    function closeBatchResults() {
+      batchResultsSection.classList.remove('visible');
+      receiptResults = [];
+      updateContinuousCount();
+      console.log('バッチ結果を閉じました');
+    }
+
+    // 自動解析関数（レシート検出時に呼ばれる）
+    async function autoAnalyzeReceipt(imageDataUrl) {
+      try {
+        console.log('自動解析開始...', new Date().toISOString());
+
+        // OCR解析を実行（サーバー経由）
+        const data = await callOpenAiReceiptOcr(imageDataUrl, (msg) => {
+          console.log('解析進捗:', msg);
+        });
+
+        console.log('OCR解析完了:', data);
+
+        // 解析結果を保存
+        receiptResults.push({
+          imageDataUrl,
+          data,
+          timestamp: Date.now()
+        });
+
+        console.log(`解析結果を保存しました。現在の解析済み数: ${receiptResults.length}`);
+
+        // カウンターを更新
+        updateContinuousCount();
+
+        // 結果を表示
+        displayResults(data);
+
+        console.log(`解析完了！現在の解析済み数: ${receiptResults.length}`);
+      } catch (error) {
+        console.error('自動解析でエラーが発生:', error);
+        // エラーが発生してもまとめ撮りは継続
       }
     }
 
@@ -2133,8 +2617,129 @@
     }
 
     function updateContinuousCount() {
-      const count = continuousFrames.length;
+      const count = receiptResults.length;
       frameCount.textContent = count;
+    }
+
+    // レシート判定関数（シンプルな画像解析）
+    function detectReceipt(imageData) {
+      const data = imageData.data;
+      const w = imageData.w;
+      const h = imageData.h;
+
+      // 1. 明るさとコントラストのチェック
+      let brightnessSum = 0;
+      let pixelCount = 0;
+      const step = 8; // サンプリング間隔
+
+      for (let y = 0; y < h; y += step) {
+        for (let x = 0; x < w; x += step) {
+          const idx = (y * w + x) * 4;
+          const r = data[idx];
+          const g = data[idx + 1];
+          const b = data[idx + 2];
+          const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
+          brightnessSum += brightness;
+          pixelCount++;
+        }
+      }
+
+      const avgBrightness = brightnessSum / pixelCount;
+
+      // レシートは白い背景が多いので、平均明るさが一定以上（しきい値を緩和）
+      if (avgBrightness < 80) {
+        console.log('レシート判定失敗: 明るさ不足', avgBrightness.toFixed(1));
+        return false; // 暗すぎる
+      }
+
+      // 2. エッジ密度のチェック（テキストが多いか）
+      let edgeCount = 0;
+      const edgeStep = 8;
+      const edgeThreshold = 25; // エッジと判定する閾値（緩和）
+
+      for (let y = edgeStep; y < h - edgeStep; y += edgeStep) {
+        for (let x = edgeStep; x < w - edgeStep; x += edgeStep) {
+          const idx = (y * w + x) * 4;
+
+          // 中心ピクセルの明度
+          const centerGray = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+
+          // 周囲ピクセルとの差分（簡易Sobelフィルタ）
+          const rightIdx = (y * w + (x + edgeStep)) * 4;
+          const bottomIdx = ((y + edgeStep) * w + x) * 4;
+
+          const rightGray = 0.299 * data[rightIdx] + 0.587 * data[rightIdx + 1] + 0.114 * data[rightIdx + 2];
+          const bottomGray = 0.299 * data[bottomIdx] + 0.587 * data[bottomIdx + 1] + 0.114 * data[bottomIdx + 2];
+
+          const gx = Math.abs(rightGray - centerGray);
+          const gy = Math.abs(bottomGray - centerGray);
+          const gradient = Math.sqrt(gx * gx + gy * gy);
+
+          if (gradient > edgeThreshold) {
+            edgeCount++;
+          }
+        }
+      }
+
+      const totalSamplePixels = ((h - 2 * edgeStep) / edgeStep) * ((w - 2 * edgeStep) / edgeStep);
+      const edgeDensity = edgeCount / totalSamplePixels;
+
+      // エッジ密度が一定以上（テキストが多い）（しきい値を緩和）
+      if (edgeDensity < 0.05) {
+        console.log('レシート判定失敗: エッジ密度不足', edgeDensity.toFixed(3));
+        return false; // エッジが少なすぎる
+      }
+
+      // 3. 中央部分にコンテンツがあるかチェック
+      const centerX = Math.floor(w / 2);
+      const centerY = Math.floor(h / 2);
+      const centerSize = Math.min(w, h) / 4;
+
+      let centerEdgeCount = 0;
+      let centerPixelCount = 0;
+
+      for (let y = centerY - centerSize / 2; y < centerY + centerSize / 2; y += edgeStep) {
+        for (let x = centerX - centerSize / 2; x < centerX + centerSize / 2; x += edgeStep) {
+          if (y >= 0 && y < h && x >= 0 && x < w) {
+            const idx = (Math.floor(y) * w + Math.floor(x)) * 4;
+            const gray = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+
+            // 近隣との差分チェック
+            if (x + edgeStep < w && y + edgeStep < h) {
+              const rightIdx = (Math.floor(y) * w + Math.floor(x + edgeStep)) * 4;
+              const bottomIdx = (Math.floor(y + edgeStep) * w + Math.floor(x)) * 4;
+
+              const rightGray = 0.299 * data[rightIdx] + 0.587 * data[rightIdx + 1] + 0.114 * data[rightIdx + 2];
+              const bottomGray = 0.299 * data[bottomIdx] + 0.587 * data[bottomIdx + 1] + 0.114 * data[bottomIdx + 2];
+
+              const gx = Math.abs(rightGray - gray);
+              const gy = Math.abs(bottomGray - gray);
+              const gradient = Math.sqrt(gx * gx + gy * gy);
+
+              if (gradient > edgeThreshold) {
+                centerEdgeCount++;
+              }
+            }
+            centerPixelCount++;
+          }
+        }
+      }
+
+      const centerEdgeDensity = centerEdgeCount / centerPixelCount;
+
+      // 中央にもコンテンツがある（しきい値を緩和）
+      if (centerEdgeDensity < 0.03) {
+        console.log('レシート判定失敗: 中央エッジ密度不足', centerEdgeDensity.toFixed(3));
+        return false;
+      }
+
+      console.log('✅ レシート検出成功!', {
+        avgBrightness: avgBrightness.toFixed(1),
+        edgeDensity: edgeDensity.toFixed(3),
+        centerEdgeDensity: centerEdgeDensity.toFixed(3)
+      });
+
+      return true; // レシートと判定
     }
 
     // ========== ファイル選択 ==========
@@ -2217,6 +2822,12 @@
     async function analyzeReceipt() {
       if (!hasImage) return;
 
+      // まとめ撮りモードでは自動解析されるため、解析ボタンは使用しない
+      if (isContinuousMode) {
+        console.log('まとめ撮りモードでは自動解析されます');
+        return;
+      }
+
       // ローディング表示
       loadingOverlay.classList.add('visible');
       const loadingText = loadingOverlay.querySelector('.loading-text');
@@ -2230,8 +2841,8 @@
       const checklist = document.getElementById('analysisChecklist');
 
       try {
-        // 連続スキャンモードの場合は、溜めたフレームを順に解析
-        if (isContinuousMode && continuousFrames.length > 0) {
+        // まとめ撮りモードでは自動解析されるため、この分岐は不要
+        if (false && isContinuousMode && continuousFrames.length > 0) {
           console.log('連続スキャンモードで解析開始。フレーム数:', continuousFrames.length);
 
           // ベストショット選択: シャープネス（鮮明度）スコアで降順ソート

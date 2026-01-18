@@ -1472,6 +1472,242 @@
         aspect-ratio: 4 / 5;
       }
     }
+
+    /* ========== ダッシュボード画面 ========== */
+    .dashboard-screen {
+      padding: 1rem 0;
+    }
+
+    .dashboard-summary {
+      background: var(--washi);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 10px var(--kage);
+    }
+
+    .dashboard-summary h2 {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 1.3rem;
+      color: var(--sumi);
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .summary-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .stat-card {
+      background: var(--kinari);
+      padding: 1rem;
+      border-radius: 6px;
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--sumi-light);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--shu);
+    }
+
+    .stat-value.count {
+      color: var(--ai);
+    }
+
+    .category-breakdown {
+      background: var(--washi);
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 10px var(--kage);
+    }
+
+    .category-breakdown h3 {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 1.1rem;
+      color: var(--sumi);
+      margin-bottom: 1rem;
+    }
+
+    .category-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--kage);
+    }
+
+    .category-item:last-child {
+      border-bottom: none;
+    }
+
+    .category-item-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .category-icon {
+      font-size: 1.5rem;
+    }
+
+    .category-name {
+      font-size: 0.95rem;
+      color: var(--sumi);
+    }
+
+    .category-amount {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--ai);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--sumi-light);
+    }
+
+    .empty-state svg {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 1rem;
+      opacity: 0.3;
+    }
+
+    .empty-state p {
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    /* ========== 履歴画面 ========== */
+    .history-screen {
+      padding: 1rem 0;
+    }
+
+    .history-header {
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .history-header h2 {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 1.5rem;
+      color: var(--sumi);
+      margin-bottom: 0.5rem;
+    }
+
+    .history-count {
+      font-size: 0.9rem;
+      color: var(--sumi-light);
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .history-card {
+      background: var(--washi);
+      border-radius: 8px;
+      padding: 1.25rem;
+      box-shadow: 0 2px 10px var(--kage);
+      transition: all 0.3s ease;
+    }
+
+    .history-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px var(--kage);
+    }
+
+    .history-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+    }
+
+    .history-store {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--sumi);
+    }
+
+    .history-amount {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--shu);
+    }
+
+    .history-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      color: var(--sumi-light);
+    }
+
+    .history-date {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .history-category {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem 0.75rem;
+      background: var(--kinari);
+      border-radius: 12px;
+      font-size: 0.8rem;
+    }
+
+    /* ========== カレンダー画面 ========== */
+    .calendar-screen {
+      padding: 1rem 0;
+    }
+
+    .calendar-placeholder {
+      text-align: center;
+      padding: 4rem 2rem;
+      background: var(--washi);
+      border-radius: 8px;
+      box-shadow: 0 2px 10px var(--kage);
+    }
+
+    .calendar-placeholder h2 {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 1.5rem;
+      color: var(--sumi);
+      margin-bottom: 1rem;
+    }
+
+    .calendar-placeholder p {
+      font-size: 0.95rem;
+      color: var(--sumi-light);
+      line-height: 1.8;
+    }
+
+    .coming-soon-badge {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      background: var(--ai);
+      color: white;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      margin-top: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -1543,8 +1779,10 @@
       </button>
     </nav>
 
-    <!-- スキャンエリア -->
-    <section class="scan-section" aria-label="レシートスキャンエリア">
+    <!-- カメラ画面 -->
+    <div id="cameraScreen" class="screen active">
+      <!-- スキャンエリア -->
+      <section class="scan-section" aria-label="レシートスキャンエリア">
       <div class="scan-area" id="scanArea" role="button" tabindex="0" aria-label="クリックしてレシートを撮影または選択">
         <!-- 障子風グロー -->
         <div class="scan-glow"></div>
@@ -1710,15 +1948,72 @@
       </div>
     </section>
 
-    <!-- 履歴リンク -->
-    <div class="history-section">
-      <a href="#" class="history-link" aria-label="履歴を見る">
-        <svg class="history-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
-          <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
-        </svg>
-        過去の履歴を見る
-      </a>
+      <!-- 履歴リンク -->
+      <div class="history-section">
+        <a href="#" class="history-link" id="historyLink" aria-label="履歴を見る">
+          <svg class="history-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+            <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+          </svg>
+          過去の履歴を見る
+        </a>
+      </div>
+    </div>
+
+    <!-- ダッシュボード画面 -->
+    <div id="dashboardScreen" class="screen">
+      <div class="dashboard-screen">
+        <div class="dashboard-summary">
+          <h2>今月の集計</h2>
+          <div class="summary-stats">
+            <div class="stat-card">
+              <div class="stat-label">合計金額</div>
+              <div class="stat-value" id="dashboardTotal">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">レシート数</div>
+              <div class="stat-value count" id="dashboardCount">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="category-breakdown">
+          <h3>カテゴリ別集計</h3>
+          <div id="categoryBreakdownList">
+            <!-- 動的に追加 -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- カレンダー画面 -->
+    <div id="calendarScreen" class="screen">
+      <div class="calendar-screen">
+        <div class="calendar-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <h2>カレンダービュー</h2>
+          <p>日付ごとのレシート表示機能は<br>現在開発中です</p>
+          <span class="coming-soon-badge">Coming Soon</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 履歴画面 -->
+    <div id="historyScreen" class="screen">
+      <div class="history-screen">
+        <div class="history-header">
+          <h2>保存済みレシート</h2>
+          <p class="history-count"><span id="historyCount">0</span>件</p>
+        </div>
+        <div class="history-list" id="historyList">
+          <!-- 動的に追加 -->
+        </div>
+      </div>
     </div>
 
     <!-- 隠しファイル入力 -->
@@ -1791,6 +2086,26 @@
     const frameCount = document.getElementById('frameCount');
     const shutterBtn = document.getElementById('shutterBtn');
 
+    // 画面切り替え要素
+    const navCamera = document.getElementById('navCamera');
+    const navDashboard = document.getElementById('navDashboard');
+    const navCalendar = document.getElementById('navCalendar');
+    const navHistory = document.getElementById('navHistory');
+    const cameraScreen = document.getElementById('cameraScreen');
+    const dashboardScreen = document.getElementById('dashboardScreen');
+    const calendarScreen = document.getElementById('calendarScreen');
+    const historyScreen = document.getElementById('historyScreen');
+
+    // ダッシュボード要素
+    const dashboardTotal = document.getElementById('dashboardTotal');
+    const dashboardCount = document.getElementById('dashboardCount');
+    const categoryBreakdownList = document.getElementById('categoryBreakdownList');
+
+    // 履歴要素
+    const historyCount = document.getElementById('historyCount');
+    const historyList = document.getElementById('historyList');
+    const historyLink = document.getElementById('historyLink');
+
     // ========== 状態管理 ==========
     let hasImage = false;
     let isStreaming = false;
@@ -1808,6 +2123,7 @@
     let isAnalyzing = false; // 解析中フラグ（重複防止）
     let receiptResults = []; // 複数のレシート解析結果を保存
     let lastReceiptDetectionTime = 0; // 最後のレシート検出時刻
+    let currentScreen = 'camera'; // 'camera', 'dashboard', 'calendar', 'history'
 
     // ========== カテゴリ定義 ==========
     const categories = [
@@ -1988,6 +2304,12 @@
 
     // イベントリスナーの設定
     function setupEventListeners() {
+      // ナビゲーションボタン
+      navCamera.addEventListener('click', () => switchScreen('camera'));
+      navDashboard.addEventListener('click', () => switchScreen('dashboard'));
+      navCalendar.addEventListener('click', () => switchScreen('calendar'));
+      navHistory.addEventListener('click', () => switchScreen('history'));
+
       // モード切り替えタブ
       cameraModeTab.addEventListener('click', () => switchToMode('camera'));
       galleryModeTab.addEventListener('click', () => switchToMode('gallery'));
@@ -2048,6 +2370,14 @@
           startCamera();
         }
       });
+
+      // 履歴リンク
+      if (historyLink) {
+        historyLink.addEventListener('click', (e) => {
+          e.preventDefault();
+          switchScreen('history');
+        });
+      }
     }
 
     // スキャンエリアのクリック処理
@@ -2055,6 +2385,185 @@
       if (currentMode === 'gallery' && !hasImage) {
         galleryInput.click();
       }
+    }
+
+    // ========== 画面切り替え ==========
+    function switchScreen(screenName) {
+      try {
+        // 現在の画面を記録
+        currentScreen = screenName;
+
+        // すべてのナビゲーションボタンとスクリーンを非アクティブに
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+
+        // 選択された画面をアクティブに
+        const selectedNavBtn = document.querySelector(`.nav-btn[data-screen="${screenName}"]`);
+        if (selectedNavBtn) {
+          selectedNavBtn.classList.add('active');
+        }
+
+        // 画面を表示
+        switch (screenName) {
+          case 'camera':
+            cameraScreen.classList.add('active');
+            break;
+          case 'dashboard':
+            dashboardScreen.classList.add('active');
+            loadDashboard();
+            break;
+          case 'calendar':
+            calendarScreen.classList.add('active');
+            break;
+          case 'history':
+            historyScreen.classList.add('active');
+            loadHistory();
+            break;
+        }
+      } catch (error) {
+        console.error('画面切り替えエラー:', error);
+      }
+    }
+
+    // ========== ダッシュボード表示 ==========
+    function loadDashboard() {
+      try {
+        const receipts = storage.getAll();
+
+        // 今月の日付範囲を計算
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+        // 今月のレシートをフィルタリング
+        const thisMonthReceipts = receipts.filter(receipt => {
+          const receiptDate = new Date(receipt.date);
+          return receiptDate >= startOfMonth && receiptDate <= endOfMonth;
+        });
+
+        // 合計金額と件数を計算
+        let totalAmount = 0;
+        const categoryTotals = {};
+
+        thisMonthReceipts.forEach(receipt => {
+          const amount = parseFloat(receipt.total) || 0;
+          totalAmount += amount;
+
+          // カテゴリ別に集計
+          const category = receipt.category || 'other';
+          if (!categoryTotals[category]) {
+            categoryTotals[category] = 0;
+          }
+          categoryTotals[category] += amount;
+        });
+
+        // 表示を更新
+        dashboardTotal.textContent = `¥${totalAmount.toLocaleString()}`;
+        dashboardCount.textContent = thisMonthReceipts.length;
+
+        // カテゴリ別集計を表示
+        renderCategoryBreakdown(categoryTotals);
+
+      } catch (error) {
+        console.error('ダッシュボード読み込みエラー:', error);
+        showEmptyState(categoryBreakdownList, 'データの読み込みに失敗しました');
+      }
+    }
+
+    function renderCategoryBreakdown(categoryTotals) {
+      if (Object.keys(categoryTotals).length === 0) {
+        showEmptyState(categoryBreakdownList, 'まだレシートが登録されていません');
+        return;
+      }
+
+      // カテゴリを金額の大きい順にソート
+      const sortedCategories = Object.entries(categoryTotals)
+        .sort((a, b) => b[1] - a[1])
+        .map(([id, amount]) => ({ id, amount }));
+
+      const html = sortedCategories.map(({ id, amount }) => {
+        const category = categories.find(c => c.id === id) || categories.find(c => c.id === 'other');
+        return `
+          <div class="category-item">
+            <div class="category-item-left">
+              <span class="category-icon">${category.icon}</span>
+              <span class="category-name">${category.name}</span>
+            </div>
+            <span class="category-amount">¥${amount.toLocaleString()}</span>
+          </div>
+        `;
+      }).join('');
+
+      categoryBreakdownList.innerHTML = html;
+    }
+
+    // ========== 履歴表示 ==========
+    function loadHistory() {
+      try {
+        const receipts = storage.getAll();
+
+        // 日付降順でソート
+        const sortedReceipts = [...receipts].sort((a, b) => {
+          return new Date(b.date) - new Date(a.date);
+        });
+
+        historyCount.textContent = sortedReceipts.length;
+
+        if (sortedReceipts.length === 0) {
+          showEmptyState(historyList, 'まだレシートが登録されていません');
+          return;
+        }
+
+        // レシートカードを生成
+        const html = sortedReceipts.map(receipt => {
+          const category = categories.find(c => c.id === receipt.category) || categories.find(c => c.id === 'other');
+          const date = new Date(receipt.date);
+          const formattedDate = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+
+          return `
+            <div class="history-card">
+              <div class="history-card-header">
+                <div class="history-store">${escapeHtml(receipt.store || '店舗名不明')}</div>
+                <div class="history-amount">¥${parseFloat(receipt.total || 0).toLocaleString()}</div>
+              </div>
+              <div class="history-card-footer">
+                <div class="history-date">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                  ${formattedDate}
+                </div>
+                <div class="history-category">
+                  <span>${category.icon}</span>
+                  <span>${category.name}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        historyList.innerHTML = html;
+
+      } catch (error) {
+        console.error('履歴読み込みエラー:', error);
+        showEmptyState(historyList, 'データの読み込みに失敗しました');
+      }
+    }
+
+    // 空の状態を表示
+    function showEmptyState(container, message) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M9 9h6M9 15h6" stroke-linecap="round"/>
+          </svg>
+          <p>${message}</p>
+        </div>
+      `;
     }
 
     // ========== モード切り替え ==========
@@ -2542,6 +3051,13 @@
         saveBtn.textContent = '保存済み';
         saveBtn.classList.add('saved');
 
+        // ダッシュボードと履歴を更新
+        if (currentScreen === 'dashboard') {
+          loadDashboard();
+        } else if (currentScreen === 'history') {
+          loadHistory();
+        }
+
       } catch (error) {
         console.error('保存エラー:', error);
         alert('保存に失敗しました: ' + error.message);
@@ -2581,6 +3097,13 @@
 
         alert(`${receiptResults.length}件のレシートを保存しました`);
         closeBatchResults();
+
+        // ダッシュボードと履歴を更新
+        if (currentScreen === 'dashboard') {
+          loadDashboard();
+        } else if (currentScreen === 'history') {
+          loadHistory();
+        }
 
       } catch (error) {
         console.error('一括保存エラー:', error);

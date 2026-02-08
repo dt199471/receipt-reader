@@ -2093,6 +2093,111 @@
       align-items: center;
       gap: 0.25rem;
     }
+
+    .calendar-detail-open {
+      margin-top: 0.75rem;
+      width: 100%;
+      border: 1px solid var(--ai);
+      background: rgba(139, 169, 195, 0.08);
+      color: var(--ai);
+      border-radius: 6px;
+      padding: 0.55rem 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .calendar-detail-open:hover {
+      background: rgba(139, 169, 195, 0.16);
+    }
+
+    .history-card {
+      cursor: pointer;
+    }
+
+    .receipt-edit-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1100;
+      padding: 1rem;
+      overflow-y: auto;
+    }
+
+    .receipt-edit-modal.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .receipt-edit-content {
+      background: var(--washi);
+      border-radius: 12px;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    .receipt-edit-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 1.5rem;
+      border-bottom: 2px solid var(--kage);
+    }
+
+    .receipt-edit-header h3 {
+      margin: 0;
+      font-family: 'Noto Serif JP', serif;
+      color: var(--sumi);
+    }
+
+    .receipt-edit-form {
+      padding: 1.25rem 1.5rem;
+      display: grid;
+      gap: 1rem;
+    }
+
+    .receipt-edit-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .receipt-edit-field label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--sumi);
+    }
+
+    .receipt-edit-field input,
+    .receipt-edit-field select {
+      border: 1.5px solid var(--kage);
+      border-radius: 6px;
+      padding: 0.65rem 0.8rem;
+      font-size: 1rem;
+      background: white;
+      color: var(--sumi);
+    }
+
+    .receipt-edit-field input:focus,
+    .receipt-edit-field select:focus {
+      outline: none;
+      border-color: var(--ai);
+      box-shadow: 0 0 0 3px rgba(139, 169, 195, 0.15);
+    }
+
+    .receipt-edit-actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: flex-end;
+      padding: 0 1.5rem 1.5rem;
+    }
   </style>
 </head>
 <body>
@@ -2461,6 +2566,40 @@
     <input type="file" class="hidden-input" id="galleryInput" accept="image/*">
   </div>
 
+  <!-- レシート詳細・編集モーダル -->
+  <div class="receipt-edit-modal" id="receiptEditModal">
+    <div class="receipt-edit-content">
+      <div class="receipt-edit-header">
+        <h3>レシート詳細・編集</h3>
+        <button class="calendar-detail-close" id="receiptEditClose">×</button>
+      </div>
+      <div class="receipt-edit-form">
+        <div class="receipt-edit-field">
+          <label for="editStoreNameInput">店舗名</label>
+          <input type="text" id="editStoreNameInput" placeholder="店舗名">
+        </div>
+        <div class="receipt-edit-field">
+          <label for="editReceiptDateInput">日付</label>
+          <input type="date" id="editReceiptDateInput">
+        </div>
+        <div class="receipt-edit-field">
+          <label for="editTotalAmountInput">合計金額</label>
+          <input type="number" id="editTotalAmountInput" placeholder="金額">
+        </div>
+        <div class="receipt-edit-field">
+          <label for="editCategorySelect">カテゴリ</label>
+          <select id="editCategorySelect">
+            <option value="">カテゴリを選択</option>
+          </select>
+        </div>
+      </div>
+      <div class="receipt-edit-actions">
+        <button class="btn btn-secondary" id="receiptEditCancelBtn">キャンセル</button>
+        <button class="btn btn-primary" id="receiptEditSaveBtn">保存</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ローディングオーバーレイ（解析中表示） -->
   <div class="loading-overlay" id="loadingOverlay">
     <div class="loading-circle"></div>
@@ -2558,6 +2697,14 @@
     const calendarDetailCount = document.getElementById('calendarDetailCount');
     const calendarDetailList = document.getElementById('calendarDetailList');
     const calendarDetailClose = document.getElementById('calendarDetailClose');
+    const receiptEditModal = document.getElementById('receiptEditModal');
+    const receiptEditClose = document.getElementById('receiptEditClose');
+    const receiptEditCancelBtn = document.getElementById('receiptEditCancelBtn');
+    const receiptEditSaveBtn = document.getElementById('receiptEditSaveBtn');
+    const editStoreNameInput = document.getElementById('editStoreNameInput');
+    const editReceiptDateInput = document.getElementById('editReceiptDateInput');
+    const editTotalAmountInput = document.getElementById('editTotalAmountInput');
+    const editCategorySelect = document.getElementById('editCategorySelect');
 
     // ========== 状態管理 ==========
     let hasImage = false;
@@ -2579,6 +2726,7 @@
     let currentScreen = 'camera'; // 'camera', 'dashboard', 'calendar', 'history'
     let currentCalendarYear = new Date().getFullYear();
     let currentCalendarMonth = new Date().getMonth() + 1; // 1-12
+    let editingReceiptId = null;
 
     // ========== カテゴリ定義 ==========
     const categories = [
@@ -2684,6 +2832,26 @@
         }
       }
 
+      // レシートを更新
+      update(id, updates) {
+        try {
+          const receipts = this.getAll();
+          const index = receipts.findIndex(r => r.id === id);
+          if (index === -1) return false;
+
+          receipts[index] = {
+            ...receipts[index],
+            ...updates,
+            updatedAt: new Date().toISOString()
+          };
+          localStorage.setItem(this.storageKey, JSON.stringify(receipts));
+          return true;
+        } catch (error) {
+          console.error('更新エラー:', error);
+          return false;
+        }
+      }
+
       // 古いデータをクリーンアップ
       cleanupOldData() {
         const receipts = this.getAll();
@@ -2777,6 +2945,16 @@
         }
       });
 
+      // カレンダー詳細からレシート詳細を開く
+      calendarDetailList.addEventListener('click', (e) => {
+        const target = e.target.closest('.calendar-detail-open');
+        if (!target) return;
+        const { receiptId } = target.dataset;
+        if (receiptId) {
+          openReceiptEditor(receiptId);
+        }
+      });
+
       // モード切り替えタブ
       cameraModeTab.addEventListener('click', () => switchToMode('camera'));
       galleryModeTab.addEventListener('click', () => switchToMode('gallery'));
@@ -2850,6 +3028,32 @@
           switchScreen('history');
         });
       }
+
+      // 履歴カードからレシート詳細を開く
+      historyList.addEventListener('click', (e) => {
+        const card = e.target.closest('.history-card');
+        if (!card) return;
+        const { receiptId } = card.dataset;
+        if (receiptId) {
+          openReceiptEditor(receiptId);
+        }
+      });
+
+      // 編集モーダル制御
+      receiptEditClose.addEventListener('click', closeReceiptEditor);
+      receiptEditCancelBtn.addEventListener('click', closeReceiptEditor);
+      receiptEditSaveBtn.addEventListener('click', saveReceiptEdit);
+      receiptEditModal.addEventListener('click', (e) => {
+        if (e.target === receiptEditModal) {
+          closeReceiptEditor();
+        }
+      });
+
+      // カテゴリ選択肢を初期化
+      editCategorySelect.innerHTML = `
+        <option value="">カテゴリを選択</option>
+        ${categories.map(cat => `<option value="${cat.id}">${cat.icon} ${cat.name}</option>`).join('')}
+      `;
     }
 
     // スキャンエリアのクリック処理
@@ -2923,7 +3127,7 @@
           totalAmount += amount;
 
           // カテゴリ別に集計
-          const category = receipt.category || 'other';
+          const category = getReceiptCategoryId(receipt);
           if (!categoryTotals[category]) {
             categoryTotals[category] = 0;
           }
@@ -2971,13 +3175,39 @@
     }
 
     // ========== 履歴表示 ==========
+    function getReceiptStoreName(receipt) {
+      return receipt?.storeName || receipt?.store || '店舗名不明';
+    }
+
+    function getReceiptCategoryId(receipt) {
+      return receipt?.categoryId || receipt?.category || 'other';
+    }
+
+    function parseReceiptDateToTime(dateValue) {
+      if (!dateValue) return null;
+      const parsed = new Date(dateValue);
+      if (!Number.isNaN(parsed.getTime())) {
+        return parsed;
+      }
+
+      const normalized = toInputDateValue(dateValue);
+      const normalizedDate = new Date(normalized);
+      if (!Number.isNaN(normalizedDate.getTime())) {
+        return normalizedDate;
+      }
+
+      return null;
+    }
+
     function loadHistory() {
       try {
         const receipts = storage.getAll();
 
         // 日付降順でソート
         const sortedReceipts = [...receipts].sort((a, b) => {
-          return new Date(b.date) - new Date(a.date);
+          const bTime = parseReceiptDateToTime(b.date)?.getTime() || 0;
+          const aTime = parseReceiptDateToTime(a.date)?.getTime() || 0;
+          return bTime - aTime;
         });
 
         historyCount.textContent = sortedReceipts.length;
@@ -2989,14 +3219,17 @@
 
         // レシートカードを生成
         const html = sortedReceipts.map(receipt => {
-          const category = categories.find(c => c.id === receipt.category) || categories.find(c => c.id === 'other');
-          const date = new Date(receipt.date);
-          const formattedDate = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+          const categoryId = getReceiptCategoryId(receipt);
+          const category = categories.find(c => c.id === categoryId) || categories.find(c => c.id === 'other');
+          const date = parseReceiptDateToTime(receipt.date);
+          const formattedDate = date
+            ? `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`
+            : '日付不明';
 
           return `
-            <div class="history-card">
+            <div class="history-card" data-receipt-id="${receipt.id || ''}">
               <div class="history-card-header">
-                <div class="history-store">${escapeHtml(receipt.store || '店舗名不明')}</div>
+                <div class="history-store">${escapeHtml(getReceiptStoreName(receipt))}</div>
                 <div class="history-amount">¥${parseFloat(receipt.total || 0).toLocaleString()}</div>
               </div>
               <div class="history-card-footer">
@@ -3159,7 +3392,8 @@
     function showDateDetail(dateKey) {
       const receipts = storage.getAll();
       const dayReceipts = receipts.filter(receipt => {
-        const date = new Date(receipt.date);
+        const date = parseReceiptDateToTime(receipt.date);
+        if (!date) return false;
         const receiptDateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
         return receiptDateKey === dateKey;
       });
@@ -3179,13 +3413,15 @@
 
       // レシートリストを生成
       const html = dayReceipts.map(receipt => {
-        const category = categories.find(c => c.id === receipt.category) || categories.find(c => c.id === 'other');
-        const time = new Date(receipt.date).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+        const categoryId = getReceiptCategoryId(receipt);
+        const category = categories.find(c => c.id === categoryId) || categories.find(c => c.id === 'other');
+        const parsed = parseReceiptDateToTime(receipt.date);
+        const time = parsed ? parsed.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) : '--:--';
 
         return `
           <div class="calendar-detail-item">
             <div class="calendar-detail-item-header">
-              <div class="calendar-detail-store">${escapeHtml(receipt.store || '店舗名不明')}</div>
+              <div class="calendar-detail-store">${escapeHtml(getReceiptStoreName(receipt))}</div>
               <div class="calendar-detail-amount">¥${Math.round(parseFloat(receipt.total) || 0).toLocaleString()}</div>
             </div>
             <div class="calendar-detail-meta">
@@ -3195,6 +3431,7 @@
                 <span>${category.name}</span>
               </div>
             </div>
+            <button class="calendar-detail-open" data-receipt-id="${receipt.id || ''}">詳細を表示・編集</button>
           </div>
         `;
       }).join('');
@@ -3228,6 +3465,67 @@
     // カレンダー詳細モーダルを閉じる
     function closeCalendarDetail() {
       calendarDetailModal.classList.remove('active');
+    }
+
+    function openReceiptEditor(receiptId) {
+      const receipt = storage.getById(receiptId);
+      if (!receipt) {
+        alert('対象のレシートが見つかりませんでした');
+        return;
+      }
+
+      editingReceiptId = receiptId;
+      editStoreNameInput.value = getReceiptStoreName(receipt);
+      editReceiptDateInput.value = toInputDateValue(receipt.date);
+      editTotalAmountInput.value = toNumberInputValue(receipt.total);
+      editCategorySelect.value = getReceiptCategoryId(receipt);
+
+      receiptEditModal.classList.add('active');
+    }
+
+    function closeReceiptEditor() {
+      receiptEditModal.classList.remove('active');
+      editingReceiptId = null;
+    }
+
+    function saveReceiptEdit() {
+      if (!editingReceiptId) return;
+
+      const storeName = editStoreNameInput.value.trim();
+      const date = editReceiptDateInput.value;
+      const total = parseFloat(editTotalAmountInput.value) || 0;
+      const categoryId = editCategorySelect.value || 'other';
+
+      if (!storeName) {
+        alert('店舗名を入力してください');
+        editStoreNameInput.focus();
+        return;
+      }
+
+      if (!date) {
+        alert('日付を入力してください');
+        editReceiptDateInput.focus();
+        return;
+      }
+
+      const updated = storage.update(editingReceiptId, {
+        storeName,
+        store: storeName,
+        date,
+        total,
+        categoryId,
+        category: categoryId
+      });
+
+      if (!updated) {
+        alert('レシートの更新に失敗しました');
+        return;
+      }
+
+      closeReceiptEditor();
+      loadHistory();
+      loadDashboard();
+      loadCalendar();
     }
 
     // ========== モード切り替え ==========
@@ -3310,9 +3608,29 @@
 
         // ビデオ再生開始を待つ
         await new Promise((resolve, reject) => {
+          let settled = false;
+          let timeoutId = null;
+
+          const finalizeResolve = () => {
+            if (settled) return;
+            settled = true;
+            if (timeoutId) clearTimeout(timeoutId);
+            resolve();
+          };
+
+          const finalizeReject = (err) => {
+            if (settled) return;
+            settled = true;
+            if (timeoutId) clearTimeout(timeoutId);
+            reject(err);
+          };
+
           cameraVideo.onloadedmetadata = () => {
             cameraVideo.play()
-              .then(resolve)
+              .then(() => {
+                isStreaming = true;
+                finalizeResolve();
+              })
               .catch((playError) => {
                 console.error('ビデオ再生エラー:', playError);
                 // play()失敗時はユーザーフレンドリーなエラーを表示
@@ -3320,24 +3638,23 @@
                   'カメラ映像を表示できません',
                   '映像の再生に失敗しました。再試行するか、ギャラリーから画像を選択してください。'
                 );
-                reject(playError);
+                finalizeReject(playError);
               });
           };
 
           // メタデータ読み込みタイムアウト（5秒）
-          setTimeout(() => {
-            if (!isStreaming) {
+          timeoutId = setTimeout(() => {
+            if (!settled) {
               showCameraError(
                 'カメラの読み込みがタイムアウトしました',
                 'カメラの応答がありません。再試行するか、ギャラリーから画像を選択してください。'
               );
-              reject(new Error('Camera metadata load timeout'));
+              finalizeReject(new Error('Camera metadata load timeout'));
             }
           }, 5000);
         });
 
         // UI更新
-        isStreaming = true;
         cameraVideo.classList.add('visible');
         scanContent.style.opacity = '0';
         cameraError.classList.remove('visible');

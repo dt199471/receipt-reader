@@ -2208,6 +2208,11 @@
       // 結果をリセット
       resultSection.classList.remove('visible');
       resultCard.classList.remove('animate');
+
+      // 単独撮影モードの場合、自動で解析を開始
+      if (!isContinuousMode) {
+        analyzeReceipt();
+      }
     }
 
     // 撮り直し

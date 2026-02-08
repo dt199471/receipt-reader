@@ -3645,6 +3645,56 @@
       }, 300);
     }
 
+    function toInputDateValue(rawDate) {
+      const today = new Date().toISOString().split('T')[0];
+      if (!rawDate) return today;
+
+      const value = String(rawDate).trim();
+      if (!value) return today;
+
+      if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        return value;
+      }
+
+      const ymdMatch = value.match(/(\d{4})\s*[年\/.\-]\s*(\d{1,2})\s*[月\/.\-]\s*(\d{1,2})/);
+      if (ymdMatch) {
+        const y = ymdMatch[1];
+        const m = String(parseInt(ymdMatch[2], 10)).padStart(2, '0');
+        const d = String(parseInt(ymdMatch[3], 10)).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+
+      const mdMatch = value.match(/(\d{1,2})\s*[月\/.\-]\s*(\d{1,2})/);
+      if (mdMatch) {
+        const y = new Date().getFullYear();
+        const m = String(parseInt(mdMatch[1], 10)).padStart(2, '0');
+        const d = String(parseInt(mdMatch[2], 10)).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+
+      const parsed = new Date(value.replace(/年/g, '/').replace(/月/g, '/').replace(/日/g, ''));
+      if (!Number.isNaN(parsed.getTime())) {
+        const y = parsed.getFullYear();
+        const m = String(parsed.getMonth() + 1).padStart(2, '0');
+        const d = String(parsed.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+
+      return today;
+    }
+
+    function toNumberInputValue(rawAmount) {
+      if (rawAmount === null || rawAmount === undefined) return '';
+
+      const cleaned = String(rawAmount).replace(/[^0-9.-]/g, '');
+      if (!cleaned || cleaned === '-' || cleaned === '.') return '';
+
+      const numeric = Number(cleaned);
+      if (!Number.isFinite(numeric)) return '';
+
+      return String(Math.round(numeric));
+    }
+
     // バッチレシートカードを生成
     function createBatchReceiptCard(result, index) {
       const card = document.createElement('div');
@@ -3653,8 +3703,8 @@
 
       const data = result.data;
       const storeName = data.storeName || '';
-      const date = data.date || new Date().toISOString().split('T')[0];
-      const total = data.total || '';
+      const date = toInputDateValue(data.date);
+      const total = toNumberInputValue(data.total);
 
       card.innerHTML = `
         <img src="${result.imageDataUrl}" alt="レシート画像" class="batch-receipt-thumbnail">
@@ -4455,9 +4505,12 @@
       const receiptDateInput = document.getElementById('receiptDateInput');
       const totalAmountInput = document.getElementById('totalAmountInput');
 
+      const normalizedDate = toInputDateValue(data.date);
+      const normalizedTotal = toNumberInputValue(data.total);
+
       if (storeNameInput) storeNameInput.value = data.storeName || '';
-      if (receiptDateInput) receiptDateInput.value = data.date || new Date().toISOString().split('T')[0];
-      if (totalAmountInput) totalAmountInput.value = data.total || '';
+      if (receiptDateInput) receiptDateInput.value = normalizedDate;
+      if (totalAmountInput) totalAmountInput.value = normalizedTotal;
 
       // 現在のレシートデータを保存
       currentReceiptData = {

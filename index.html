@@ -1629,6 +1629,13 @@
       text-align: center;
     }
 
+    .dashboard-sub-label {
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--sumi-light);
+      margin-bottom: 1rem;
+    }
+
     .summary-stats {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -1704,6 +1711,220 @@
       font-size: 1rem;
       font-weight: 600;
       color: var(--ai);
+    }
+
+    .goal-section {
+      background: var(--washi);
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 10px var(--kage);
+    }
+
+    .goal-section h3 {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 1.1rem;
+      color: var(--sumi);
+      margin-bottom: 0.9rem;
+    }
+
+    .goal-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 0.75rem;
+      align-items: end;
+    }
+
+    .goal-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .goal-field label {
+      font-size: 0.85rem;
+      color: var(--sumi-light);
+      font-weight: 600;
+    }
+
+    .goal-field select,
+    .goal-field input {
+      border: 1.5px solid var(--kage);
+      border-radius: 6px;
+      padding: 0.65rem 0.75rem;
+      font-size: 1rem;
+      background: white;
+      color: var(--sumi);
+    }
+
+    .goal-field select:focus,
+    .goal-field input:focus {
+      outline: none;
+      border-color: var(--ai);
+      box-shadow: 0 0 0 3px rgba(139, 169, 195, 0.15);
+    }
+
+    .goal-save-btn {
+      border: none;
+      border-radius: 6px;
+      background: linear-gradient(135deg, var(--ai) 0%, #7b9dbc 100%);
+      color: #fff;
+      font-weight: 700;
+      padding: 0.7rem 1rem;
+      cursor: pointer;
+      min-width: 86px;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+
+    .goal-save-btn:hover {
+      transform: translateY(-1px);
+      opacity: 0.95;
+    }
+
+    .goal-hint {
+      margin-top: 0.7rem;
+      font-size: 0.82rem;
+      color: var(--sumi-light);
+    }
+
+    .marimo-section {
+      background: linear-gradient(180deg, #f8fbff 0%, #eef7ff 55%, #e7efe1 100%);
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 10px var(--kage);
+      border: 1px solid rgba(139, 169, 195, 0.22);
+    }
+
+    .marimo-section h3 {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 1.1rem;
+      color: var(--sumi);
+      margin-bottom: 0.7rem;
+    }
+
+    .marimo-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.8rem 0;
+    }
+
+    .marimo-character {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #8cd689 0%, #2f9f4a 70%, #256d37 100%);
+      box-shadow: inset -10px -14px 0 rgba(22, 90, 40, 0.25), 0 10px 16px rgba(21, 73, 42, 0.24);
+      position: relative;
+      transition: transform 0.35s ease, filter 0.35s ease, background 0.35s ease;
+    }
+
+    .marimo-eye {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #12331f;
+      top: 44%;
+    }
+
+    .marimo-eye.left {
+      left: 38%;
+    }
+
+    .marimo-eye.right {
+      right: 38%;
+    }
+
+    .marimo-mouth {
+      position: absolute;
+      width: 30px;
+      height: 16px;
+      border: 3px solid #12331f;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      border-radius: 0 0 20px 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 58%;
+    }
+
+    .marimo-badges {
+      display: flex;
+      gap: 0.45rem;
+      min-height: 1.4rem;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .marimo-badge {
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 999px;
+      font-size: 0.78rem;
+      color: var(--sumi);
+      padding: 0.2rem 0.55rem;
+    }
+
+    .marimo-status {
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--sumi);
+      line-height: 1.5;
+    }
+
+    .marimo-character.growth-small {
+      transform: scale(0.78);
+    }
+
+    .marimo-character.growth-mid {
+      transform: scale(1);
+    }
+
+    .marimo-character.growth-large {
+      transform: scale(1.18);
+    }
+
+    .marimo-character.state-charming {
+      filter: saturate(1.2) brightness(1.05);
+    }
+
+    .marimo-character.state-charming::after {
+      content: '✨';
+      position: absolute;
+      top: -12px;
+      right: -6px;
+      font-size: 1.1rem;
+    }
+
+    .marimo-character.state-ugly {
+      background: radial-gradient(circle at 30% 30%, #8a9665 0%, #676443 70%, #4e412c 100%);
+      filter: saturate(0.75) contrast(1.1);
+      transform: scale(1.2) rotate(-4deg);
+    }
+
+    .marimo-character.state-ugly .marimo-mouth {
+      width: 26px;
+      height: 10px;
+      border-top: 3px solid #2f2418;
+      border-bottom: none;
+      border-left: none;
+      border-right: none;
+      border-radius: 18px 18px 0 0;
+      top: 61%;
+    }
+
+    @media (max-width: 420px) {
+      .goal-controls {
+        grid-template-columns: 1fr;
+      }
+
+      .goal-save-btn {
+        width: 100%;
+      }
     }
 
     .empty-state {
@@ -2470,7 +2691,8 @@
     <div id="dashboardScreen" class="screen">
       <div class="dashboard-screen">
         <div class="dashboard-summary">
-          <h2>今月の集計</h2>
+          <h2 id="dashboardPeriodTitle">今月の集計</h2>
+          <p class="dashboard-sub-label" id="dashboardPeriodLabel">集計期間: 今月</p>
           <div class="summary-stats">
             <div class="stat-card">
               <div class="stat-label">合計金額</div>
@@ -2483,8 +2705,40 @@
           </div>
         </div>
 
+        <div class="goal-section">
+          <h3>予算目標</h3>
+          <div class="goal-controls">
+            <div class="goal-field">
+              <label for="goalPeriodSelect">期間</label>
+              <select id="goalPeriodSelect">
+                <option value="week">1週間</option>
+                <option value="month">1か月</option>
+              </select>
+            </div>
+            <div class="goal-field">
+              <label for="goalAmountInput">目標金額（円）</label>
+              <input type="number" id="goalAmountInput" min="1" step="1" placeholder="例: 30000">
+            </div>
+            <button class="goal-save-btn" id="saveGoalBtn">保存</button>
+          </div>
+          <p class="goal-hint" id="goalHintText">目標に近づくとマリもが魅力的に育ちます。</p>
+        </div>
+
+        <div class="marimo-section">
+          <h3>マリもの成長</h3>
+          <div class="marimo-wrap">
+            <div class="marimo-character growth-mid" id="marimoCharacter">
+              <span class="marimo-eye left"></span>
+              <span class="marimo-eye right"></span>
+              <span class="marimo-mouth"></span>
+            </div>
+            <div class="marimo-badges" id="marimoBadges"></div>
+            <p class="marimo-status" id="marimoStatusText">まずは目標を設定してください。</p>
+          </div>
+        </div>
+
         <div class="category-breakdown">
-          <h3>カテゴリ別集計</h3>
+          <h3 id="categoryBreakdownTitle">カテゴリ別集計</h3>
           <div id="categoryBreakdownList">
             <!-- 動的に追加 -->
           </div>
@@ -2680,6 +2934,16 @@
     const dashboardTotal = document.getElementById('dashboardTotal');
     const dashboardCount = document.getElementById('dashboardCount');
     const categoryBreakdownList = document.getElementById('categoryBreakdownList');
+    const categoryBreakdownTitle = document.getElementById('categoryBreakdownTitle');
+    const dashboardPeriodTitle = document.getElementById('dashboardPeriodTitle');
+    const dashboardPeriodLabel = document.getElementById('dashboardPeriodLabel');
+    const goalPeriodSelect = document.getElementById('goalPeriodSelect');
+    const goalAmountInput = document.getElementById('goalAmountInput');
+    const saveGoalBtn = document.getElementById('saveGoalBtn');
+    const goalHintText = document.getElementById('goalHintText');
+    const marimoCharacter = document.getElementById('marimoCharacter');
+    const marimoBadges = document.getElementById('marimoBadges');
+    const marimoStatusText = document.getElementById('marimoStatusText');
 
     // 履歴要素
     const historyCount = document.getElementById('historyCount');
@@ -2727,6 +2991,10 @@
     let currentCalendarYear = new Date().getFullYear();
     let currentCalendarMonth = new Date().getMonth() + 1; // 1-12
     let editingReceiptId = null;
+    let goalSettings = {
+      period: 'week',
+      amount: 0
+    };
 
     // ========== カテゴリ定義 ==========
     const categories = [
@@ -2868,6 +3136,28 @@
         localStorage.removeItem(this.storageKey);
         console.log('全データをクリアしました');
       }
+
+      getSettings() {
+        try {
+          const raw = localStorage.getItem(this.settingsKey);
+          return raw ? JSON.parse(raw) : {};
+        } catch (error) {
+          console.error('設定読み込みエラー:', error);
+          return {};
+        }
+      }
+
+      saveSettings(settings) {
+        try {
+          const current = this.getSettings();
+          const merged = { ...current, ...settings };
+          localStorage.setItem(this.settingsKey, JSON.stringify(merged));
+          return true;
+        } catch (error) {
+          console.error('設定保存エラー:', error);
+          return false;
+        }
+      }
     }
 
     // ストレージインスタンスを作成
@@ -2883,6 +3173,9 @@
 
       // イベントリスナーの設定
       setupEventListeners();
+
+      // 目標設定の初期値をロード
+      loadGoalSettings();
 
       // カメラモードで初期化
       if (isCameraSupported()) {
@@ -3054,6 +3347,19 @@
         <option value="">カテゴリを選択</option>
         ${categories.map(cat => `<option value="${cat.id}">${cat.icon} ${cat.name}</option>`).join('')}
       `;
+
+      if (saveGoalBtn) {
+        saveGoalBtn.addEventListener('click', handleSaveGoalSettings);
+      }
+
+      if (goalPeriodSelect) {
+        goalPeriodSelect.addEventListener('change', () => {
+          goalSettings.period = goalPeriodSelect.value === 'month' ? 'month' : 'week';
+          if (currentScreen === 'dashboard') {
+            loadDashboard();
+          }
+        });
+      }
     }
 
     // スキャンエリアのクリック処理
@@ -3103,26 +3409,117 @@
     }
 
     // ========== ダッシュボード表示 ==========
+    function loadGoalSettings() {
+      const settings = storage.getSettings();
+      const rawGoal = settings.goal || {};
+
+      goalSettings = {
+        period: rawGoal.period === 'month' ? 'month' : 'week',
+        amount: Math.max(0, parseInt(rawGoal.amount, 10) || 0)
+      };
+
+      if (goalPeriodSelect) {
+        goalPeriodSelect.value = goalSettings.period;
+      }
+      if (goalAmountInput) {
+        goalAmountInput.value = goalSettings.amount > 0 ? goalSettings.amount : '';
+      }
+    }
+
+    function handleSaveGoalSettings() {
+      const period = goalPeriodSelect && goalPeriodSelect.value === 'month' ? 'month' : 'week';
+      const amount = goalAmountInput ? Math.max(0, parseInt(goalAmountInput.value, 10) || 0) : 0;
+
+      if (amount <= 0) {
+        alert('目標金額は1円以上で入力してください');
+        if (goalAmountInput) goalAmountInput.focus();
+        return;
+      }
+
+      goalSettings = { period, amount };
+      storage.saveSettings({ goal: goalSettings });
+      loadDashboard();
+    }
+
+    function getDashboardPeriodRange(period) {
+      const now = new Date();
+
+      if (period === 'month') {
+        const start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+        const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+        return { start, end, label: `${now.getMonth() + 1}月`, title: '今月の集計' };
+      }
+
+      const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+      const start = new Date(end);
+      start.setDate(start.getDate() - 6);
+      start.setHours(0, 0, 0, 0);
+      return { start, end, label: '直近7日間', title: '1週間の集計' };
+    }
+
+    function getReceiptsForPeriod(receipts, period) {
+      const range = getDashboardPeriodRange(period);
+      const filtered = receipts.filter((receipt) => {
+        const date = parseReceiptDateToTime(receipt.date);
+        if (!date) return false;
+        return date >= range.start && date <= range.end;
+      });
+      return { filtered, range };
+    }
+
+    function formatRatioPercent(ratio) {
+      if (!Number.isFinite(ratio)) return '0';
+      return (ratio * 100).toFixed(0);
+    }
+
+    function renderMarimoStatus(totalAmount, goalAmount, period) {
+      if (!marimoCharacter || !marimoStatusText || !marimoBadges) return;
+
+      marimoCharacter.className = 'marimo-character';
+      marimoBadges.innerHTML = '';
+      const periodText = period === 'month' ? '1か月' : '1週間';
+
+      if (!goalAmount || goalAmount <= 0) {
+        marimoCharacter.classList.add('growth-mid');
+        marimoStatusText.textContent = `${periodText}目標を設定すると、マリもが成長を始めます。`;
+        goalHintText.textContent = '目標に近づくとマリもが魅力的に育ちます。';
+        return;
+      }
+
+      const ratio = totalAmount / goalAmount;
+
+      if (ratio >= 0.9 && ratio <= 1.05) {
+        marimoCharacter.classList.add('growth-large', 'state-charming');
+        marimoStatusText.textContent = `最高の状態です。目標にほぼ一致（達成率 ${formatRatioPercent(ratio)}%）。`;
+        marimoBadges.innerHTML = '<span class="marimo-badge">魅力MAX</span><span class="marimo-badge">キラキラ</span>';
+      } else if (ratio <= 0.7) {
+        marimoCharacter.classList.add('growth-small');
+        marimoStatusText.textContent = `まだ小さめです。使った金額は目標の ${formatRatioPercent(ratio)}%。`;
+        marimoBadges.innerHTML = '<span class="marimo-badge">成長途中</span>';
+      } else if (ratio <= 1.3) {
+        marimoCharacter.classList.add('growth-mid');
+        marimoStatusText.textContent = `少し膨らみ気味です。目標比 ${formatRatioPercent(ratio)}%。`;
+        marimoBadges.innerHTML = '<span class="marimo-badge">注意</span>';
+      } else {
+        marimoCharacter.classList.add('growth-large', 'state-ugly');
+        marimoStatusText.textContent = `大きく超過しています（目標比 ${formatRatioPercent(ratio)}%）。マリもが醜悪化しています。`;
+        marimoBadges.innerHTML = '<span class="marimo-badge">超過警告</span><span class="marimo-badge">要節約</span>';
+      }
+
+      goalHintText.textContent = `目標 ${goalAmount.toLocaleString()}円 / 実績 ${Math.round(totalAmount).toLocaleString()}円（${periodText}）`;
+    }
+
     function loadDashboard() {
       try {
         const receipts = storage.getAll();
-
-        // 今月の日付範囲を計算
-        const now = new Date();
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-
-        // 今月のレシートをフィルタリング
-        const thisMonthReceipts = receipts.filter(receipt => {
-          const receiptDate = new Date(receipt.date);
-          return receiptDate >= startOfMonth && receiptDate <= endOfMonth;
-        });
+        const period = goalSettings.period === 'month' ? 'month' : 'week';
+        const { filtered, range } = getReceiptsForPeriod(receipts, period);
 
         // 合計金額と件数を計算
         let totalAmount = 0;
         const categoryTotals = {};
 
-        thisMonthReceipts.forEach(receipt => {
+        filtered.forEach(receipt => {
           const amount = parseFloat(receipt.total) || 0;
           totalAmount += amount;
 
@@ -3136,10 +3533,17 @@
 
         // 表示を更新
         dashboardTotal.textContent = `¥${totalAmount.toLocaleString()}`;
-        dashboardCount.textContent = thisMonthReceipts.length;
+        dashboardCount.textContent = filtered.length;
+        dashboardPeriodTitle.textContent = range.title;
+        dashboardPeriodLabel.textContent = `集計期間: ${range.label}`;
+        categoryBreakdownTitle.textContent = `カテゴリ別集計（${range.label}）`;
+        if (goalPeriodSelect && goalPeriodSelect.value !== period) {
+          goalPeriodSelect.value = period;
+        }
 
         // カテゴリ別集計を表示
         renderCategoryBreakdown(categoryTotals);
+        renderMarimoStatus(totalAmount, goalSettings.amount, period);
 
       } catch (error) {
         console.error('ダッシュボード読み込みエラー:', error);
